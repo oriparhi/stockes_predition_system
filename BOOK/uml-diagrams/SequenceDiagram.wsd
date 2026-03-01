@@ -1,0 +1,63 @@
+@startuml
+actor User
+participant "MainController" as Ctrl
+participant "ForecastingForm" as View
+participant "AlgorithmRegistry" as Registry
+participant "MarketDataProvider" as API
+participant "LocalFileReader" as FileIO
+participant "ForecastEngine" as Engine
+
+User -> Ctrl: Click "New Forecast"
+activate Ctrl
+
+Ctrl -> Registry: getAvailableAlgorithms()
+activate Registry
+Registry --> Ctrl: List<AlgorithmNames>
+deactivate Registry
+
+Ctrl -> View: open(algorithmList)
+activate View
+
+note over View: User can select a specific algorithm \nor "Auto-Select Best (Min MSE)"
+User -> View: Enter Data & Select "Best Algorithm"
+View -> Ctrl: submitData(stock, period, "BEST", sourceType)
+deactivate View
+
+== Data Retrieval ==
+
+alt sourceType == "API"
+    Ctrl -> API: fetchHistoricalData(stock)
+    activate API
+    API --> Ctrl: PriceHistoryData
+    deactivate API
+else sourceType == "Local CSV"
+    Ctrl -> FileIO: readCSV(filePath)
+    activate FileIO
+    FileIO --> Ctrl: PriceHistoryData
+    deactivate FileIO
+end
+
+== Processing: Best Algorithm Selection ==
+
+Ctrl -> Engine: findBestAndExecute(PriceHistoryData, period)
+activate Engine
+
+loop For each algorithm in Registry
+    Engine -> Engine: Train model on 80% data
+    Engine -> Engine: Predict on remaining 20%
+    Engine -> Engine: Calculate MSE
+end
+
+Engine -> Engine: Identify Algorithm with Min(MSE)
+Engine --> Ctrl: forecastResults + bestAlgoName + mseValue
+deactivate Engine
+
+== Results ==
+
+Ctrl -> View: displayResults(results, bestAlgoName, mseValue)
+activate View
+View -> User: Display Forecast + "Best Model Found: LSTM (MSE: 0.02)"
+deactivate View
+
+deactivate Ctrl
+@enduml

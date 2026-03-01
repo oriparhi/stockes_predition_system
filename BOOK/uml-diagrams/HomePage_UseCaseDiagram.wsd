@@ -1,0 +1,29 @@
+@startuml home_page
+left to right direction
+
+actor User
+
+rectangle {
+  
+  usecase "Load Stock Data from Internet or From CSV" as LoadNet
+  ' note right of LoadNet
+  '   The user can use this or Load Data from CSV or Load History. 
+  '   If the user choose one of them, he can't choose another option too.
+  ' end note
+  
+  
+  usecase "Login Or Register" as login
+  usecase "Logout" as logout
+  usecase "Show Data"
+  usecase "Load History"
+  usecase "New Prediction"
+}
+
+User --> login
+User --> LoadNet
+User --> logout
+User --> (Load History)
+User --> (Show Data)
+User --> (New Prediction)
+
+@enduml
