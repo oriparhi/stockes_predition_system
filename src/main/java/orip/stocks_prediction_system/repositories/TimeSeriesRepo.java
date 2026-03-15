@@ -10,13 +10,13 @@ import orip.stocks_prediction_system.datamodels.TimeSeries;
 import orip.stocks_prediction_system.utilities.Interval;
 
 @Repository
-public interface TimeSeriesReop extends MongoRepository<TimeSeries, String>
+public interface TimeSeriesRepo extends MongoRepository<TimeSeries, String>
 {
-   public List<TimeSeries> findAllByTimeSeriesName(String name);
+   public List<TimeSeries> findAllByName(String name);
 
-   public TimeSeries findOneByIdAndName(String Id, String name);
+   public TimeSeries findOneByIdAndName(String dataId, String name);
 
-   public List<TimeSeries> findByTimeSeriesNameLike(String name);
+   public List<TimeSeries> findByNameLike(String name);
 
    public List<TimeSeries> findByInterval(Interval interval);
 

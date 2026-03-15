@@ -3,6 +3,7 @@ package orip.stocks_prediction_system.datamodels;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.List;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -18,7 +19,7 @@ public class TimeSeries
     private String name;
     private Interval interval;
     private int dataLimit;
-    private ArrayList<DataPoints> data;
+    private List<DataPoints> data;
     
     //TODO: For cases that the API returns in LocalDate Format only, add default hour like 12:00
     public TimeSeries(String dataId,String name, Interval interval, int dataLimit, ArrayList<DataPoints> data) {
@@ -53,7 +54,7 @@ public class TimeSeries
         this.dataLimit = dataLimit;
     }
 
-    public ArrayList<DataPoints> getData() {
+    public List<DataPoints> getData() {
         return data;
     }
 
@@ -61,14 +62,19 @@ public class TimeSeries
         this.data = data;
     }
 
-    public void addData(DataPoints newData)
+    public void addData(DataPoints newData) 
     {
-        this.data.add(newData);
+
+        if (data == null) {
+            data = new ArrayList<>();
+        }
+
+        data.add(newData);
     }
 
-    public DataPoints giveSpecificData(int n)
+    public DataPoints getDataPoint(int index)
     {
-        return data.get(n);
+        return data.get(index);
     }
 
     public String getDataId() {
@@ -84,10 +90,10 @@ public class TimeSeries
      * @param date - the specific date we want to get his value
      * @return - the value of the specific date. If this date doesn't exist, it returns null
      */
-    public Double getValueByDate(TimeSeries series, LocalDateTime date) 
+    public Double getValueByDate( LocalDateTime date) 
     {
 
-        for (DataPoints p : series.getData()) 
+        for (DataPoints p : data) 
         {
 
             if (p.getDate().equals(date)) 
@@ -100,10 +106,10 @@ public class TimeSeries
         return null;
     }
 
-    public Double getValueByMonth(TimeSeries series,int year, int month) 
+    public Double getValueByMonth(int year, int month) 
     {
 
-        for (DataPoints p : series.getData())  
+        for (DataPoints p : data)  
         {
 
             if (p.getDate().getYear() == year && p.getDate().getMonthValue() == month) 
