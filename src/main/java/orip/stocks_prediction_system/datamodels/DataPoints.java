@@ -1,24 +1,30 @@
 package orip.stocks_prediction_system.datamodels;
 
-import java.time.LocalDateTime;
 
-//TODO: For cases that the API returns in LocalDate Format only, add default hour like 12:00
+//TODO: For cases that the API returns in Localindex Format only, add default hour like 12:00
 public class DataPoints 
 {
-    private LocalDateTime date;
+    private int index;
     private double value;
 
-    public DataPoints(LocalDateTime date, double value) {
-        this.date = date;
+    public DataPoints(int index, double value) {
+        this.index = index;
         this.value = value;
     }
 
-    public LocalDateTime getDate() {
-        return date;
+    public DataPoints(double value) {
+        this.value = value;
     }
 
-    public void setDate(LocalDateTime date) {
-        this.date = date;
+    public DataPoints() {
+    }
+
+    public int getIndex() {
+        return index;
+    }
+
+    public void setIndex(int index) {
+        this.index = index;
     }
 
     public double getValue() {

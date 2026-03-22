@@ -15,20 +15,25 @@ import orip.stocks_prediction_system.utilities.Interval;
 public class TimeSeries 
 {
     @Id
-    private String dataId; 
+    private String timeSeriesId; 
     private String name;
-    private Interval interval;
-    private int dataLimit;
     private List<DataPoints> data;
-    
-    //TODO: For cases that the API returns in LocalDate Format only, add default hour like 12:00
-    public TimeSeries(String dataId,String name, Interval interval, int dataLimit, ArrayList<DataPoints> data) {
-        this.dataId = dataId;
+    private LocalDateTime createdAt;
+    private String creator;
+
+
+    public TimeSeries(String name, List<DataPoints> data, LocalDateTime createdAt, String creator) 
+    {
         this.name = name;
-        this.interval = interval;
-        this.dataLimit = dataLimit;
         this.data = data;
+        this.createdAt = createdAt;
+        this.creator = creator;
     }
+
+    public String getTimeSeriesId() {
+        return timeSeriesId;
+    }
+
 
     public String getName() {
         return name;
@@ -38,65 +43,41 @@ public class TimeSeries
         this.name = name;
     }
 
-    public Interval getInterval() {
-        return interval;
-    }
-
-    public void setInterval(Interval interval) {
-        this.interval = interval;
-    }
-
-    public int getDataLimit() {
-        return dataLimit;
-    }
-
-    public void setDataLimit(int dataLimit) {
-        this.dataLimit = dataLimit;
-    }
-
     public List<DataPoints> getData() {
         return data;
     }
 
-    public void setData(ArrayList<DataPoints> data) {
+    public void setData(List<DataPoints> data) {
         this.data = data;
     }
 
-    public void addData(DataPoints newData) 
-    {
-
-        if (data == null) {
-            data = new ArrayList<>();
-        }
-
-        data.add(newData);
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
     }
 
-    public DataPoints getDataPoint(int index)
-    {
-        return data.get(index);
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
     }
 
-    public String getDataId() {
-        return dataId;
+    public String getcreator() {
+        return creator;
     }
 
-    public void setDataId(String dataId) {
-        this.dataId = dataId;
+    public void setcreator(String creator) {
+        this.creator = creator;
     }
 
     /**
      * @param series - The series where we want to search on
-     * @param date - the specific date we want to get his value
-     * @return - the value of the specific date. If this date doesn't exist, it returns null
+     * @param index - the specific index we want to get index doesn't exist, it returns null
      */
-    public Double getValueByDate( LocalDateTime date) 
+    public Double getValueByDate(int index) 
     {
 
         for (DataPoints p : data) 
         {
 
-            if (p.getDate().equals(date)) 
+            if (p.getIndex() == index) 
             {
                 return p.getValue();
             }
@@ -106,19 +87,19 @@ public class TimeSeries
         return null;
     }
 
-    public Double getValueByMonth(int year, int month) 
-    {
+    // public Double getValueByMonth(int year, int month) 
+    // {
 
-        for (DataPoints p : data)  
-        {
+    //     for (DataPoints p : data)  
+    //     {
 
-            if (p.getDate().getYear() == year && p.getDate().getMonthValue() == month) 
-            {
+    //         if (p.getDate().getYear() == year && p.getDate().getMonthValue() == month) 
+    //         {
 
-                return p.getValue();
-            }
-        }
+    //             return p.getValue();
+    //         }
+    //     }
 
-        return null;
-    }
+    //     return null;
+    // }
 }
