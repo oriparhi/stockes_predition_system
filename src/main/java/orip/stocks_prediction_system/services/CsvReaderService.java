@@ -17,20 +17,18 @@ import orip.stocks_prediction_system.repositories.TimeSeriesRepo;
 public class CsvReaderService 
 {
     private TimeSeriesRepo timeSeriesRepo;
-    private String fileName;
-    private List<DataPoints> data;
     private String creator;
     private LocalDateTime createdAt;
 
     public CsvReaderService(TimeSeriesRepo timeSeriesRepo) {
         this.timeSeriesRepo = timeSeriesRepo;
-        data = new ArrayList<>();
         
     }
 
-    public boolean ReadCsv(InputStream inputStream, String fileName)
+    public List<DataPoints> ReadCsv(InputStream inputStream, String FileName)
     {
-        this.fileName = fileName;
+        List<DataPoints> data = new ArrayList<>();
+        String fileName = FileName;
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream)))
         {
             String line;
@@ -54,7 +52,7 @@ public class CsvReaderService
                     } catch (Exception ex) {
                         System.out.println("Error in file "+fileName+"! There is a problem in a line");
                         System.out.println(ex);
-                        
+                        return null;
                     }
                 }
             }
@@ -63,15 +61,15 @@ public class CsvReaderService
         {
             System.out.println("Error in reading the file "+fileName);
             System.out.println(e);
-            return false;
+            return null;
         }
-        return true;
+        return data;
     }
 
-    public String CreateNewTimeSeries(String creator, LocalDateTime createdAt)
+    public String CreateNewTimeSeries(String Creator, LocalDateTime CreatedAt,List<DataPoints> data, String fileName)
     {
-        this.creator = creator;
-        this.createdAt = createdAt;
+        String creator = Creator;
+        LocalDateTime createdAt = CreatedAt;
         TimeSeries newTimeSeries = new TimeSeries(fileName, data, createdAt, creator);
         String newTimeSeriesId = timeSeriesRepo.insert(newTimeSeries).getTimeSeriesId();
         return newTimeSeriesId;

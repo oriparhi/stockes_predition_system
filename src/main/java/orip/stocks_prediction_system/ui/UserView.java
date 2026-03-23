@@ -12,7 +12,7 @@ import com.vaadin.flow.router.Route;
 import orip.stocks_prediction_system.datamodels.User;
 import orip.stocks_prediction_system.services.UserService;
 
-@Route("/")
+@Route(value = "/",layout = AppNavBarLayout.class)
 public class UserView extends VerticalLayout
 {
     private UserService userService;
