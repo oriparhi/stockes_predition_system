@@ -20,6 +20,7 @@ public class TimeSeries
     private List<DataPoints> data;
     private LocalDateTime createdAt;
     private String creator;
+    private Interval interval;
 
 
     public TimeSeries(String name, List<DataPoints> data, LocalDateTime createdAt, String creator) 
@@ -29,6 +30,21 @@ public class TimeSeries
         this.createdAt = createdAt;
         this.creator = creator;
     }
+    
+
+    public TimeSeries(String name, List<DataPoints> data, LocalDateTime createdAt, String creator, Interval interval) {
+        this.name = name;
+        this.data = data;
+        this.createdAt = createdAt;
+        this.creator = creator;
+        this.interval = interval;
+    }
+
+
+    public Interval getInterval() {
+        return interval;
+    }
+
 
     public String getTimeSeriesId() {
         return timeSeriesId;
