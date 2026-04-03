@@ -3,6 +3,8 @@ package orip.stocks_prediction_system.Forcasting;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.stereotype.Component;
+@Component("Moving Average")
 public class MovingAverage extends AbstractForcastModel
 {
     private int K;
