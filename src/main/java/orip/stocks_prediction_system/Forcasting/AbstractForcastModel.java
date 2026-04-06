@@ -30,6 +30,7 @@ public abstract class AbstractForcastModel implements ForcastModel
     public void setTotalSize(int totalSize) {
         this.totalSize = totalSize;
     }
+    
     public ArrayList<Double> getErrorList() {
         return errorList;
     }
@@ -44,9 +45,14 @@ public abstract class AbstractForcastModel implements ForcastModel
      * Let's you add a number to the BuildingNumbers list
      * @param number - the number you want to add to the list
      */
-    public void addNumber(Double number)
+    public void addBuildingNumber(Double number)
     {   
         buildingNumbers.add(number);
+        totalSize++;
     }
-    
+
+    public void addAuditData(double num) {
+        this.auditData.add(num);
+        this.totalSize++; // עדכון הגודל הכולל
+    }
 }

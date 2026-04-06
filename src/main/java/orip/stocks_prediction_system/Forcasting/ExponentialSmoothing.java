@@ -1,0 +1,111 @@
+package orip.stocks_prediction_system.Forcasting;
+
+import java.util.ArrayList;
+
+
+import org.apache.commons.math3.analysis.UnivariateFunction;
+import org.apache.commons.math3.optim.MaxEval;
+import org.apache.commons.math3.optim.nonlinear.scalar.GoalType;
+import org.apache.commons.math3.optim.univariate.BrentOptimizer;
+import org.apache.commons.math3.optim.univariate.SearchInterval;
+import org.apache.commons.math3.optim.univariate.UnivariateObjectiveFunction;
+import org.apache.commons.math3.optim.univariate.UnivariatePointValuePair;
+
+public class ExponentialSmoothing extends AbstractForcastModel 
+{
+    public ExponentialSmoothing(ArrayList<Double> buildingNumbers, ArrayList<Double> auditData) {
+        this.buildingNumbers = new ArrayList<>(buildingNumbers);
+        this.auditData = new ArrayList<>(auditData);
+        
+        // אתחול רשימות ריקות
+        this.errorList = new ArrayList<>();
+        this.forecastList = new ArrayList<>();
+        
+        // ערך התחלתי -1
+        this.MSE = -1;
+        
+        // חישוב גודל כולל
+        this.totalSize = buildingNumbers.size() + auditData.size();
+    }
+
+    
+    @Override
+    public double CalculateMse() 
+    {
+        double lastForecast = buildingNumbers.get(0);
+        double alpha = findBestAlpha(buildingNumbers);
+        double sumErrorSqr = 0;
+        for(int i = 1; i<buildingNumbers.size();i++)
+        {
+            lastForecast = alpha*buildingNumbers.get(i) + (1-alpha)*lastForecast;
+        }
+
+        for(double actual : auditData) 
+        {
+            sumErrorSqr += Math.pow((actual - lastForecast), 2);
+        }
+
+        this.MSE = sumErrorSqr/auditData.size();
+        System.out.println("Exponential smoothing mse: "+this.MSE);
+        return this.MSE;
+    }
+
+    @Override
+    public ArrayList<Double> predict(int futureSteps) 
+    {
+        forecastList.clear();
+        ArrayList <Double> combined = new ArrayList<>(buildingNumbers);
+        combined.addAll(auditData);
+        double lastForecast = combined.get(0);
+        double alpha = findBestAlpha(combined);
+        for(int i = 1; i<combined.size();i++)
+        {
+            lastForecast = alpha*combined.get(i) + (1-alpha)*lastForecast;
+        }
+        
+        for(int j = 0; j<futureSteps;j++)
+        {
+            forecastList.add(lastForecast);
+        }
+        return forecastList;
+    }    
+
+    private double findBestAlpha(ArrayList <Double> data)
+    {
+        int N = data.size();
+        UnivariateFunction insideMseFunction = new UnivariateFunction() 
+        {
+            @Override
+            public double value(double alpha) 
+            {
+                double insideMse=0;
+                double previousForecast = data.get(0);
+                for(int i = 1; i<N;i++)
+                {
+                    double currentActual = data.get(i);
+                    double error = currentActual-previousForecast;
+                    insideMse+= Math.pow(error, 2);
+
+                    //Updating forcast for next round
+                    previousForecast = alpha*currentActual + (1-alpha) * previousForecast;
+                }
+                insideMse = insideMse/(N-1);
+                return insideMse;
+            }
+        };
+        // 2. הגדרת האופטימיזטור (BrentOptimizer נחשב יעיל ומהיר לחיפוש חד-ממדי)
+        BrentOptimizer optimizer = new BrentOptimizer(1e-10, 1e-14);
+
+        UnivariatePointValuePair result = optimizer.optimize(
+            new MaxEval(1000),
+            new UnivariateObjectiveFunction(insideMseFunction),
+            GoalType.MINIMIZE,
+            new SearchInterval(0, 1)
+        );
+
+        double bestAlpha = result.getPoint();
+        System.out.println("inside msem for best alpha is "+result.getValue());
+        System.out.println("Exponential smoothing alpha: "+bestAlpha);
+        return bestAlpha;
+    }
+}
