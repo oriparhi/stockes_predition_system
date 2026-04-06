@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.stereotype.Component;
-@Component("Moving Average")
+@Component("Moving_Average")
 public class MovingAverage extends AbstractForcastModel
 {
     private int K;
