@@ -21,6 +21,7 @@ public class TimeSeries
     private LocalDateTime createdAt;
     private String creator;
     private Interval interval;
+    private int seasonalityPeriod;
 
 
     public TimeSeries(String name, List<DataPoints> data, LocalDateTime createdAt, String creator) 
@@ -75,13 +76,31 @@ public class TimeSeries
         this.createdAt = createdAt;
     }
 
-    public String getcreator() {
+
+    public String getCreator() {
         return creator;
     }
 
-    public void setcreator(String creator) {
+
+    public void setCreator(String creator) {
         this.creator = creator;
     }
+
+
+    public void setInterval(Interval interval) {
+        this.interval = interval;
+    }
+
+
+    public int getSeasonalityPeriod() {
+        return seasonalityPeriod;
+    }
+
+
+    public void setSeasonalityPeriod(int seasonalityPeriod) {
+        this.seasonalityPeriod = seasonalityPeriod;
+    }
+
 
     /**
      * @param series - The series where we want to search on

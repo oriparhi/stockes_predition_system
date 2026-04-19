@@ -2,8 +2,7 @@ package orip.stocks_prediction_system.Forcasting;
 
 import java.util.ArrayList;
 
-import org.springframework.stereotype.Component;
-@Component("Average")
+
 public class Average extends AbstractForcastModel
 {
     private double average;

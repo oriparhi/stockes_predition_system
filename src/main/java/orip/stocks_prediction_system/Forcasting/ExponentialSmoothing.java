@@ -10,9 +10,7 @@ import org.apache.commons.math3.optim.univariate.BrentOptimizer;
 import org.apache.commons.math3.optim.univariate.SearchInterval;
 import org.apache.commons.math3.optim.univariate.UnivariateObjectiveFunction;
 import org.apache.commons.math3.optim.univariate.UnivariatePointValuePair;
-import org.springframework.stereotype.Component;
 
-@Component("Exponential_Smoothing")
 public class ExponentialSmoothing extends AbstractForcastModel 
 {
     public ExponentialSmoothing(ArrayList<Double> buildingNumbers, ArrayList<Double> auditData) {

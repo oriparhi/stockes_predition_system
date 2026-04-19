@@ -13,5 +13,5 @@ public enum Interval
     HOUR_8,
     DAY_1,
     WEEK_1,
-    MOUNTH_1
+    MONTH_1
 }

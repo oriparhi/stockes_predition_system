@@ -16,13 +16,22 @@ public class ForcastRequest
     private boolean isItSeasonality;
     private String Algorithem;
     
-    public ForcastRequest(String timeSeriesId, Interval interval, int predictionHorizon, String algorithem,boolean isItSeasonality,int dataLimit) 
+    public ForcastRequest(String timeSeriesId, int predictionHorizon, String algorithem,boolean isItSeasonality,int dataLimit) 
     {
         this.timeSeriesId = timeSeriesId;
         this.predictionHorizon = predictionHorizon;
         Algorithem = algorithem;
         this.isItSeasonality = isItSeasonality;
         this.dataLimit = dataLimit;
+    }
+
+
+    public ForcastRequest(String timeSeriesId, int predictionHorizon, boolean isItSeasonality, String algorithem) 
+    {
+        this.timeSeriesId = timeSeriesId;
+        this.predictionHorizon = predictionHorizon;
+        this.isItSeasonality = isItSeasonality;
+        Algorithem = algorithem;
     }
 
 

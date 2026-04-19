@@ -2,8 +2,6 @@ package orip.stocks_prediction_system.Forcasting;
 
 import java.util.ArrayList;
 
-import org.springframework.stereotype.Component;
-@Component("LinearRegression")
 public class LinearRegression extends AbstractForcastModel 
 {
     private ArrayList <Double> X_axis;

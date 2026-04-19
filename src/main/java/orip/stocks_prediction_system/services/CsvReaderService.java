@@ -71,7 +71,8 @@ public class CsvReaderService
         String creator = Creator;
         LocalDateTime createdAt = CreatedAt;
         TimeSeries newTimeSeries = new TimeSeries(fileName, data, createdAt, creator);
-        String newTimeSeriesId = timeSeriesRepo.insert(newTimeSeries).getTimeSeriesId();
+        timeSeriesRepo.insert(newTimeSeries);
+        String newTimeSeriesId = newTimeSeries.getTimeSeriesId();
         return newTimeSeriesId;
 
     }
