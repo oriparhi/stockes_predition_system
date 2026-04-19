@@ -138,7 +138,7 @@ public class UploadDataView extends VerticalLayout
         // סוף עבודה על הפאנל העלה של הCSV
 
         // תחילת עבודה על הפאנל העלאה של הAPI
-        
+        //TODO: Connect the API frontend to the api service
         uploadApi.setWidth("50%");
         uploadApi.getStyle().set("padding-left", "20px");
 

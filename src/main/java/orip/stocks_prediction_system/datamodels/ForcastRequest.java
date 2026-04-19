@@ -11,19 +11,19 @@ public class ForcastRequest
     @Id
     private String forcastId;
     private String timeSeriesId;
-    private int dataLimit;
+    // private int dataLimit;
     private int predictionHorizon;
     private boolean isItSeasonality;
     private String Algorithem;
     
-    public ForcastRequest(String timeSeriesId, int predictionHorizon, String algorithem,boolean isItSeasonality,int dataLimit) 
-    {
-        this.timeSeriesId = timeSeriesId;
-        this.predictionHorizon = predictionHorizon;
-        Algorithem = algorithem;
-        this.isItSeasonality = isItSeasonality;
-        this.dataLimit = dataLimit;
-    }
+    // public ForcastRequest(String timeSeriesId, int predictionHorizon, String algorithem,boolean isItSeasonality,int dataLimit) 
+    // {
+    //     this.timeSeriesId = timeSeriesId;
+    //     this.predictionHorizon = predictionHorizon;
+    //     Algorithem = algorithem;
+    //     this.isItSeasonality = isItSeasonality;
+    //     this.dataLimit = dataLimit;
+    // }
 
 
     public ForcastRequest(String timeSeriesId, int predictionHorizon, boolean isItSeasonality, String algorithem) 
@@ -35,13 +35,13 @@ public class ForcastRequest
     }
 
 
-    public int getDataLimit() {
-        return dataLimit;
-    }
+    // public int getDataLimit() {
+    //     return dataLimit;
+    // }
 
-    public void setDataLimit(int dataLimit) {
-        this.dataLimit = dataLimit;
-    }
+    // public void setDataLimit(int dataLimit) {
+    //     this.dataLimit = dataLimit;
+    // }
 
     public int getPredictionHorizon() {
         return predictionHorizon;
