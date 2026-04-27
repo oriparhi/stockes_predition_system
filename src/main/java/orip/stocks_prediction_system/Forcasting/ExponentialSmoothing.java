@@ -11,9 +11,11 @@ import org.apache.commons.math3.optim.univariate.SearchInterval;
 import org.apache.commons.math3.optim.univariate.UnivariateObjectiveFunction;
 import org.apache.commons.math3.optim.univariate.UnivariatePointValuePair;
 
+import orip.stocks_prediction_system.datamodels.DataPoints;
+
 public class ExponentialSmoothing extends AbstractForcastModel 
 {
-    public ExponentialSmoothing(ArrayList<Double> buildingNumbers, ArrayList<Double> auditData) {
+    public ExponentialSmoothing(ArrayList<DataPoints> buildingNumbers, ArrayList<DataPoints> auditData) {
         this.buildingNumbers = new ArrayList<>(buildingNumbers);
         this.auditData = new ArrayList<>(auditData);
         
@@ -32,17 +34,17 @@ public class ExponentialSmoothing extends AbstractForcastModel
     @Override
     public double CalculateMse() 
     {
-        double lastForecast = buildingNumbers.get(0);
+        double lastForecast = buildingNumbers.get(0).getValue();
         double alpha = findBestAlpha(buildingNumbers);
         double sumErrorSqr = 0;
         for(int i = 1; i<buildingNumbers.size();i++)
         {
-            lastForecast = alpha*buildingNumbers.get(i) + (1-alpha)*lastForecast;
+            lastForecast = alpha*buildingNumbers.get(i).getValue() + (1-alpha)*lastForecast;
         }
 
-        for(double actual : auditData) 
+        for(DataPoints actual : auditData) 
         {
-            sumErrorSqr += Math.pow((actual - lastForecast), 2);
+            sumErrorSqr += Math.pow((actual.getValue() - lastForecast), 2);
         }
 
         this.MSE = sumErrorSqr/auditData.size();
@@ -51,26 +53,29 @@ public class ExponentialSmoothing extends AbstractForcastModel
     }
 
     @Override
-    public ArrayList<Double> predict(int futureSteps) 
+    public ArrayList<DataPoints> predict(int futureSteps) 
     {
         forecastList.clear();
-        ArrayList <Double> combined = new ArrayList<>(buildingNumbers);
+        ArrayList <DataPoints> combined = new ArrayList<>(buildingNumbers);
         combined.addAll(auditData);
-        double lastForecast = combined.get(0);
+        double lastForecast = combined.get(0).getValue();
         double alpha = findBestAlpha(combined);
         for(int i = 1; i<combined.size();i++)
         {
-            lastForecast = alpha*combined.get(i) + (1-alpha)*lastForecast;
+            lastForecast = alpha*combined.get(i).getValue() + (1-alpha)*lastForecast;
         }
         
         for(int j = 0; j<futureSteps;j++)
         {
-            forecastList.add(lastForecast);
+            if(j==0)
+                forecastList.add(new DataPoints(0,lastForecast));
+            else
+                forecastList.add(new DataPoints(forecastList.getLast().getIndex()+1,lastForecast));
         }
         return forecastList;
     }    
 
-    private double findBestAlpha(ArrayList <Double> data)
+    private double findBestAlpha(ArrayList <DataPoints> data)
     {
         int N = data.size();
         UnivariateFunction insideMseFunction = new UnivariateFunction() 
@@ -79,10 +84,10 @@ public class ExponentialSmoothing extends AbstractForcastModel
             public double value(double alpha) 
             {
                 double insideMse=0;
-                double previousForecast = data.get(0);
+                double previousForecast = data.get(0).getValue();
                 for(int i = 1; i<N;i++)
                 {
-                    double currentActual = data.get(i);
+                    double currentActual = data.get(i).getValue();
                     double error = currentActual-previousForecast;
                     insideMse+= Math.pow(error, 2);
 

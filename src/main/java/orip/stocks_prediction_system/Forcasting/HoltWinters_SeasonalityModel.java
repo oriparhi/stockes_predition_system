@@ -9,11 +9,13 @@ import org.apache.commons.math3.optim.nonlinear.scalar.ObjectiveFunction;
 import org.apache.commons.math3.optim.nonlinear.scalar.noderiv.NelderMeadSimplex;
 import org.apache.commons.math3.optim.nonlinear.scalar.noderiv.SimplexOptimizer;
 
+import orip.stocks_prediction_system.datamodels.DataPoints;
+
 public class HoltWinters_SeasonalityModel extends AbstractForcastModel
 {
     private int Seasonality_Period;
 
-    public HoltWinters_SeasonalityModel(ArrayList<Double> buildingNumbers, ArrayList<Double> auditData, int Seasonality_Period) 
+    public HoltWinters_SeasonalityModel(ArrayList<DataPoints> buildingNumbers, ArrayList<DataPoints> auditData, int Seasonality_Period) 
     {
         this.buildingNumbers = buildingNumbers;
         this.auditData = auditData;
@@ -51,12 +53,12 @@ public class HoltWinters_SeasonalityModel extends AbstractForcastModel
         double gamma = bestParams[2];
         System.out.printf("calculateTotalMSE: alpha = %.9f, beta = %.9f, gamma = %.9f",alpha,beta,gamma);
 
-        ArrayList <Double> forcast = calculateForecast(buildingNumbers,alpha,beta,gamma,forecastHorizon);
+        ArrayList <DataPoints> forcast = calculateForecast(buildingNumbers,alpha,beta,gamma,forecastHorizon);
 
         double sumSquaredError = 0;
         for(int j = 0; j<auditData.size();j++)
         {
-            sumSquaredError+= Math.pow((auditData.get(j)-forcast.get(j)), 2);
+            sumSquaredError+= Math.pow((auditData.get(j).getValue()-forcast.get(j).getValue()), 2);
         }
 
         this.MSE = sumSquaredError/auditData.size();
@@ -65,9 +67,9 @@ public class HoltWinters_SeasonalityModel extends AbstractForcastModel
     }
 
     @Override
-    public ArrayList<Double> predict(int futureSteps) 
+    public ArrayList<DataPoints> predict(int futureSteps) 
     {
-         ArrayList <Double> combinedData = new ArrayList<>(buildingNumbers);
+         ArrayList <DataPoints> combinedData = new ArrayList<>(buildingNumbers);
         combinedData.addAll(auditData);
 
         double bestParams[] = optimizeParams(combinedData);
@@ -84,7 +86,7 @@ public class HoltWinters_SeasonalityModel extends AbstractForcastModel
     //Helper functions
 
     // --- Optimization Logic ---
-    private double[] optimizeParams(ArrayList<Double> data) 
+    private double[] optimizeParams(ArrayList<DataPoints> data) 
     {
         SimplexOptimizer optimizer = new SimplexOptimizer(1e-10, 1e-30);
 
@@ -114,7 +116,7 @@ public class HoltWinters_SeasonalityModel extends AbstractForcastModel
         return optimum.getPoint();
     }
 
-    private double calculateInsideMSE(ArrayList<Double> data, double alpha, double beta, double gamma) 
+    private double calculateInsideMSE(ArrayList<DataPoints> data, double alpha, double beta, double gamma) 
     {
         int n = data.size();
         int s = Seasonality_Period;
@@ -125,11 +127,11 @@ public class HoltWinters_SeasonalityModel extends AbstractForcastModel
 
         // Initialize Seasonals (Year 1)
         double avgYear1 = 0;
-        for (int i = 0; i < s; i++) avgYear1 += data.get(i);
+        for (int i = 0; i < s; i++) avgYear1 += data.get(i).getValue();
         avgYear1 /= s;
 
         for (int i = 0; i < s; i++) {
-            Seasonal[i] = data.get(i) / avgYear1;
+            Seasonal[i] = data.get(i).getValue() / avgYear1;
         }
 
         double sumSquaredError=0;
@@ -141,20 +143,20 @@ public class HoltWinters_SeasonalityModel extends AbstractForcastModel
             
             if(t == s) //First prediction after the initialization
             {
-                Level[t] = data.get(t)/Seasonal[t - s];
-                double prevDecDeserialized = data.get(t - 1) / Seasonal[t - 1];
+                Level[t] = data.get(t).getValue()/Seasonal[t - s];
+                double prevDecDeserialized = data.get(t - 1).getValue() / Seasonal[t - 1];
                 Trend[t] = Level[t] - prevDecDeserialized;
             }
             else
             {
                 //Calculate Error
                 double forcast = (Level[t-1] + Trend[t-1]) * Seasonal[t-1];
-                double error = data.get(t) - forcast;
+                double error = data.get(t).getValue() - forcast;
                 sumSquaredError += (error * error);
                 errorCount++;
 
                 // Update Level
-                double valDeserialized = data.get(t) / Seasonal[t - s];
+                double valDeserialized = data.get(t).getValue() / Seasonal[t - s];
                 Level[t] = alpha * valDeserialized + (1 - alpha) * (Level[t - 1] + Trend[t - 1]);
 
                 // Update Trend
@@ -162,7 +164,7 @@ public class HoltWinters_SeasonalityModel extends AbstractForcastModel
             }
 
             // Update Seasonal (Multiplicative)
-            Seasonal[t] = gamma * (data.get(t) / Level[t]) + (1 - gamma) * Seasonal[t - s];
+            Seasonal[t] = gamma * (data.get(t).getValue() / Level[t]) + (1 - gamma) * Seasonal[t - s];
         }
         
         if (errorCount == 0) {
@@ -172,7 +174,7 @@ public class HoltWinters_SeasonalityModel extends AbstractForcastModel
         }
     }
     
-    private ArrayList<Double> calculateForecast(ArrayList<Double> data, double alpha, double beta, double gamma,int horizons) 
+    private ArrayList<DataPoints> calculateForecast(ArrayList<DataPoints> data, double alpha, double beta, double gamma,int horizons) 
     {
         int n = data.size();
         int s = Seasonality_Period;
@@ -183,12 +185,12 @@ public class HoltWinters_SeasonalityModel extends AbstractForcastModel
 
         // Initialize Seasonals (Year 1)
         double avgYear1 = 0;
-        for (int i = 0; i < s; i++) avgYear1 += data.get(i);
+        for (int i = 0; i < s; i++) avgYear1 += data.get(i).getValue();
         
         avgYear1 /= s;
 
         for (int i = 0; i < s; i++) {
-            Seasonal[i] = data.get(i) / avgYear1;
+            Seasonal[i] = data.get(i).getValue() / avgYear1;
         }
 
 
@@ -198,24 +200,24 @@ public class HoltWinters_SeasonalityModel extends AbstractForcastModel
             
             if(t == s) //First prediction after the initialization
             {
-                Level[t] = data.get(t)/Seasonal[t - s];
-                double prevDecDeserialized = data.get(t - 1) / Seasonal[t - 1];
+                Level[t] = data.get(t).getValue()/Seasonal[t - s];
+                double prevDecDeserialized = data.get(t - 1).getValue() / Seasonal[t - 1];
                 Trend[t] = Level[t] - prevDecDeserialized;
             }
             else
             {
                 // Update Level
-                double valDeserialized = data.get(t) / Seasonal[t - s];
+                double valDeserialized = data.get(t).getValue() / Seasonal[t - s];
                 Level[t] = alpha * valDeserialized + (1 - alpha) * (Level[t - 1] + Trend[t - 1]);
 
                 // Update Trend
                 Trend[t] = beta * (Level[t] - Level[t - 1]) + (1 - beta) * Trend[t - 1];
             }
-            Seasonal[t] = gamma * (data.get(t) / Level[t]) + (1 - gamma) * Seasonal[t - s];
+            Seasonal[t] = gamma * (data.get(t).getValue() / Level[t]) + (1 - gamma) * Seasonal[t - s];
         }
 
         //project into the future
-        ArrayList <Double> forecasts = new ArrayList<>();
+        ArrayList <DataPoints> forecasts = new ArrayList<>();
         double lastLevel = Level[n-1];
         double lastTrend = Trend[n-1];
         
@@ -231,7 +233,10 @@ public class HoltWinters_SeasonalityModel extends AbstractForcastModel
             double seasonalFactor = Seasonal[seasonalIndex];
             
             double prediction = (lastLevel + (k * lastTrend)) * seasonalFactor;
-            forecasts.add(prediction);
+            if(forecasts.size()==0)
+                forecasts.add(new DataPoints(0,prediction));
+            else
+                forecasts.add(new DataPoints(forecasts.getLast().getIndex()+1,prediction));
         }
 
         return forecasts;

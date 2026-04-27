@@ -3,10 +3,12 @@ package orip.stocks_prediction_system.Forcasting;
 import java.util.ArrayList;
 import java.util.List;
 
+import orip.stocks_prediction_system.datamodels.DataPoints;
+
 public class MovingAverage extends AbstractForcastModel
 {
     private int K;
-    public MovingAverage(ArrayList<Double> buildingNumbers,ArrayList<Double> auditData) 
+    public MovingAverage(ArrayList<DataPoints> buildingNumbers,ArrayList<DataPoints> auditData) 
     {
         this.buildingNumbers = buildingNumbers;
         this.auditData = auditData;
@@ -48,29 +50,38 @@ public class MovingAverage extends AbstractForcastModel
             findBestK();
         }
 
-        List<Double> simulatedData = new ArrayList<>(buildingNumbers);
+        List<DataPoints> simulatedData = new ArrayList<>(buildingNumbers);
         double currentForecast = calculateAvg(this.K);
-        List<Double> predictionsForAudit = new ArrayList<>();
+        List<DataPoints> predictionsForAudit = new ArrayList<>();
 
         for (int j = 0; j < auditData.size(); j++) {
             // שומרים את התחזית הנוכחית
-            predictionsForAudit.add(currentForecast);
-            
+            if(j==0)
+                predictionsForAudit.add(new DataPoints(0,currentForecast));
+            else
+                predictionsForAudit.add(new DataPoints(predictionsForAudit.getLast().getIndex()+1,currentForecast));
             // מוסיפים את התחזית לרשימה המדומה כדי לחשב את הצעד הבא (חיזוי רקורסיבי)
-            simulatedData.add(currentForecast);
-            
+            if(j==0)
+                simulatedData.add(new DataPoints(0,currentForecast));
+            else
+                simulatedData.add(new DataPoints(simulatedData.getLast().getIndex()+1,currentForecast));
+
             double sum = 0;
             for (int i = 0; i < this.K; i++) {
-                sum += simulatedData.get(simulatedData.size() - 1 - i);
+                sum += simulatedData.get(simulatedData.size() - 1 - i).getValue();
             }
             currentForecast = sum / this.K;
         }
 
         //The calculation of the final MSE
         errorList.clear();
-        for (int i = 0; i < auditData.size(); i++) {
-             double error = auditData.get(i) - predictionsForAudit.get(i);
-             errorList.add(error * error);
+        for (int i = 0; i < auditData.size(); i++) 
+        {
+             double error = auditData.get(i).getValue() - predictionsForAudit.get(i).getValue();
+             if(i==0)
+                errorList.add(new DataPoints(0,error * error));
+            else
+                errorList.add(new DataPoints(errorList.getLast().getIndex()+1,error * error));
         }
         this.MSE = calculateMSE(); // קורא לפונקציית העזר הפרטית של המחלקה
         
@@ -79,21 +90,30 @@ public class MovingAverage extends AbstractForcastModel
     }
 
     @Override
-    public ArrayList<Double> predict(int futureSteps) 
+    public ArrayList<DataPoints> predict(int futureSteps) 
     {
-        ArrayList <Double> combined = new ArrayList<>(buildingNumbers);
+        ArrayList<DataPoints> combined = new ArrayList<>(buildingNumbers);
         combined.addAll(auditData);
         for(int j = 0; j<futureSteps;j++)
         {
             double avg=0,forcast = 0,sum=0;
             for(int i = 0;i<K;i++)
             {
-                sum+=combined.get(combined.size()-1-i);
+                sum+=combined.get(combined.size()-1-i).getValue();
             }
             avg = sum/K;
             forcast = avg;
-            combined.add(forcast);
-            forecastList.add(forcast);
+            if(j==0)
+            {
+                combined.add(new DataPoints(0,forcast));
+                forecastList.add(new DataPoints(0,forcast));
+            }
+            else
+            {
+                combined.add(new DataPoints(combined.getLast().getIndex()+1,forcast));
+                forecastList.add(new DataPoints(forecastList.getLast().getIndex()+1,forcast));
+            }
+            
         }
         return forecastList;
     }
@@ -116,9 +136,9 @@ public class MovingAverage extends AbstractForcastModel
         }
 
         double sumErrors = 0,mse = 0.0;
-        for (Double errorVal : errorList) 
+        for (DataPoints errorVal : errorList) 
         {
-        sumErrors += errorVal;
+        sumErrors += errorVal.getValue();
         }
 
         mse = sumErrors/errorList.size();
@@ -131,21 +151,21 @@ public class MovingAverage extends AbstractForcastModel
 
         double forcast=0,sum=0,errorSquered = 0;
         for(int i=0; i<k;i++)
-            sum+=buildingNumbers.get(i);
+            sum+=buildingNumbers.get(i).getValue();
 
         forcast = sum/k;
 
         for(int i = k; i<buildingNumbers.size(); i++)
         {
-            double actualValue = buildingNumbers.get(i);
+            double actualValue = buildingNumbers.get(i).getValue();
 
-            double error = buildingNumbers.get(i)-forcast;
+            double error = buildingNumbers.get(i).getValue()-forcast;
             errorSquered = error*error;
-            errorList.add(errorSquered);
+            errorList.add(new DataPoints(errorList.getLast().getIndex()+1,errorSquered));
             // 2. עדכון הסכום עבור התחזית הבאה (Sliding Window)
             // מורידים את האיבר הישן ביותר בחלון (i - k)
             // ומוסיפים את האיבר הנוכחי שנכנס לחלון (i)
-            sum = sum - buildingNumbers.get(i - k) + actualValue;
+            sum = sum - buildingNumbers.get(i - k).getValue() + actualValue;
 
             // 3. עדכון התחזית לאיטרציה הבאה
             forcast = sum/k;

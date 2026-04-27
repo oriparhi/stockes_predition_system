@@ -19,6 +19,8 @@ public interface TimeSeriesRepo extends MongoRepository<TimeSeries, String>
 
    public TimeSeries findOneByNameAndCreatedAt(String name, LocalDateTime createdAt);
 
+   public TimeSeries findOneById(String timeSeriesId);
+
    public List<TimeSeries> findByCreator(String creator);
 
    public List<TimeSeries> findByCreatedAt(LocalDateTime createdAt);
