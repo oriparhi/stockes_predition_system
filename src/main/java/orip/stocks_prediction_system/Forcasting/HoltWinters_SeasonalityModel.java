@@ -1,6 +1,7 @@
 package orip.stocks_prediction_system.Forcasting;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.commons.math3.analysis.MultivariateFunction;
 import org.apache.commons.math3.optim.*;
@@ -15,10 +16,10 @@ public class HoltWinters_SeasonalityModel extends AbstractForcastModel
 {
     private int Seasonality_Period;
 
-    public HoltWinters_SeasonalityModel(ArrayList<DataPoints> buildingNumbers, ArrayList<DataPoints> auditData, int Seasonality_Period) 
+    public HoltWinters_SeasonalityModel(List<DataPoints> buildingNumbers, List<DataPoints> auditData, int Seasonality_Period) 
     {
-        this.buildingNumbers = buildingNumbers;
-        this.auditData = auditData;
+        this.buildingNumbers = new ArrayList<>(buildingNumbers);
+        this.auditData = new ArrayList<>(auditData);
         
         // אתחול רשימות ריקות
         this.errorList = new ArrayList<>();

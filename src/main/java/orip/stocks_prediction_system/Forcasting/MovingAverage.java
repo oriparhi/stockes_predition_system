@@ -8,10 +8,10 @@ import orip.stocks_prediction_system.datamodels.DataPoints;
 public class MovingAverage extends AbstractForcastModel
 {
     private int K;
-    public MovingAverage(ArrayList<DataPoints> buildingNumbers,ArrayList<DataPoints> auditData) 
+    public MovingAverage(List<DataPoints> buildingNumbers,List<DataPoints> auditData) 
     {
-        this.buildingNumbers = buildingNumbers;
-        this.auditData = auditData;
+        this.buildingNumbers = new ArrayList<>(buildingNumbers);
+        this.auditData = new ArrayList<>(auditData);
         this.MSE =-1;
         totalSize = buildingNumbers.size()+auditData.size();
         this.K = 0;

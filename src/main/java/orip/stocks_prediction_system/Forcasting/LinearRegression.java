@@ -1,6 +1,7 @@
 package orip.stocks_prediction_system.Forcasting;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import orip.stocks_prediction_system.datamodels.DataPoints;
 
@@ -8,10 +9,10 @@ public class LinearRegression extends AbstractForcastModel
 {
     private ArrayList<DataPoints> X_axis;
     private int n;
-    public LinearRegression(ArrayList<DataPoints> buildingNumbers,ArrayList<DataPoints> auditData) 
+    public LinearRegression(List<DataPoints> buildingNumbers,List<DataPoints> auditData) 
     {
-        this.buildingNumbers = buildingNumbers;
-        this.auditData = auditData;
+        this.buildingNumbers = new ArrayList<>(buildingNumbers);
+        this.auditData = new ArrayList<>(auditData);
         this.MSE =-1;
         this.n = buildingNumbers.size();
         totalSize = n+auditData.size();

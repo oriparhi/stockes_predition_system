@@ -1,7 +1,7 @@
 package orip.stocks_prediction_system.Forcasting;
 
 import java.util.ArrayList;
-
+import java.util.List;
 
 import org.apache.commons.math3.analysis.UnivariateFunction;
 import org.apache.commons.math3.optim.MaxEval;
@@ -15,7 +15,7 @@ import orip.stocks_prediction_system.datamodels.DataPoints;
 
 public class ExponentialSmoothing extends AbstractForcastModel 
 {
-    public ExponentialSmoothing(ArrayList<DataPoints> buildingNumbers, ArrayList<DataPoints> auditData) {
+    public ExponentialSmoothing(List<DataPoints> buildingNumbers,List<DataPoints> auditData) {
         this.buildingNumbers = new ArrayList<>(buildingNumbers);
         this.auditData = new ArrayList<>(auditData);
         
