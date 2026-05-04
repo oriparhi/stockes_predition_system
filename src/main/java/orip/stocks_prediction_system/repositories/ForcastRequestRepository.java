@@ -1,5 +1,6 @@
 package orip.stocks_prediction_system.repositories;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.data.mongodb.repository.MongoRepository;
@@ -14,7 +15,15 @@ public interface ForcastRequestRepository extends MongoRepository<ForcastRequest
 
     public List<ForcastRequest> findBytimeSeriesId(String timeSeriesId);
     
-    public List<ForcastRequest> findAllByAlgorithem(String Algorithem);
+    public List<ForcastRequest> findAllByAlgorithm(String Algorithm);
 
-    public List<ForcastRequest> findAllByItSeasonality(boolean itSeasonality);
+
+    public List<ForcastRequest> findAllByRequestedBy(String requestedBy);
+
+    public List<ForcastRequest> findAllByRequestedAtBetween(LocalDateTime start, LocalDateTime end);
+
+    public List<ForcastRequest> findAllByRequestedByAndRequestedAtBetween(String requestedBy, LocalDateTime start, LocalDateTime end);
+
+    public ForcastRequest findOneByRequestedByAndRequestedAt(String requestedBy, LocalDateTime requestedAt);
+
 }

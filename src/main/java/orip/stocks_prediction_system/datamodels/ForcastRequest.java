@@ -1,9 +1,10 @@
 package orip.stocks_prediction_system.datamodels;
 
+import java.time.LocalDateTime;
+
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import orip.stocks_prediction_system.utilities.Interval;
 
 @Document(collection = "ForcastRequests")
 public class ForcastRequest 
@@ -11,37 +12,45 @@ public class ForcastRequest
     @Id
     private String forcastId;
     private String timeSeriesId;
-    // private int dataLimit;
     private int predictionHorizon;
-    private boolean isItSeasonality;
-    private String Algorithem;
+    private String Algorithm;
+    private String requestedBy;
+    private LocalDateTime requestedAt;
     
-    // public ForcastRequest(String timeSeriesId, int predictionHorizon, String algorithem,boolean isItSeasonality,int dataLimit) 
-    // {
-    //     this.timeSeriesId = timeSeriesId;
-    //     this.predictionHorizon = predictionHorizon;
-    //     Algorithem = algorithem;
-    //     this.isItSeasonality = isItSeasonality;
-    //     this.dataLimit = dataLimit;
-    // }
 
-
-    public ForcastRequest(String timeSeriesId, int predictionHorizon, boolean isItSeasonality, String algorithem) 
-    {
+    public ForcastRequest(String timeSeriesId, int predictionHorizon, boolean isItSeasonality, String algorithm, String requestedBy, LocalDateTime requestedAt) {
         this.timeSeriesId = timeSeriesId;
         this.predictionHorizon = predictionHorizon;
-        this.isItSeasonality = isItSeasonality;
-        Algorithem = algorithem;
+        Algorithm = algorithm;
+        this.requestedBy = requestedBy;
+        this.requestedAt = requestedAt;
     }
 
 
-    // public int getDataLimit() {
-    //     return dataLimit;
-    // }
 
-    // public void setDataLimit(int dataLimit) {
-    //     this.dataLimit = dataLimit;
-    // }
+    public String getRequestedBy() {
+        return requestedBy;
+    }
+
+
+
+    public void setRequestedBy(String requestedBy) {
+        this.requestedBy = requestedBy;
+    }
+
+
+
+    public LocalDateTime getRequestedAt() {
+        return requestedAt;
+    }
+
+
+
+    public void setRequestedAt(LocalDateTime requestedAt) {
+        this.requestedAt = requestedAt;
+    }
+
+
 
     public int getPredictionHorizon() {
         return predictionHorizon;
@@ -51,12 +60,12 @@ public class ForcastRequest
         this.predictionHorizon = predictionHorizon;
     }
 
-    public String getAlgorithem() {
-        return Algorithem;
+    public String getAlgorithm() {
+        return Algorithm;
     }
 
-    public void setAlgorithem(String algorithem) {
-        Algorithem = algorithem;
+    public void setAlgorithm(String algorithm) {
+        Algorithm = algorithm;
     }
 
     public String getForcastId() {
@@ -71,13 +80,6 @@ public class ForcastRequest
         this.timeSeriesId = timeSeriesId;
     }
 
-    public boolean isItSeasonality() {
-        return isItSeasonality;
-    }
-
-    public void setItSeasonality(boolean isItSeasonality) {
-        this.isItSeasonality = isItSeasonality;
-    }
 
     
 

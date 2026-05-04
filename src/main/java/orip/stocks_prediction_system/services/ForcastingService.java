@@ -1,5 +1,6 @@
 package orip.stocks_prediction_system.services;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,8 +15,10 @@ import orip.stocks_prediction_system.Forcasting.LinearRegression;
 import orip.stocks_prediction_system.Forcasting.MovingAverage;
 import orip.stocks_prediction_system.datamodels.DataPoints;
 import orip.stocks_prediction_system.datamodels.ForcastRequest;
+import orip.stocks_prediction_system.datamodels.ForcastResult;
 import orip.stocks_prediction_system.datamodels.TimeSeries;
 import orip.stocks_prediction_system.repositories.ForcastRequestRepository;
+import orip.stocks_prediction_system.repositories.ForcastResultRepository;
 import orip.stocks_prediction_system.repositories.TimeSeriesRepo;
 
 @Service
@@ -23,6 +26,7 @@ public class ForcastingService
 {
     TimeSeriesRepo timeSeriesRepo;
     ForcastRequestRepository forcastRequestRepository;
+    ForcastResultRepository forcastResultRepository;
 
     private boolean isItSeasonality;
     private int seasonalityPeriod;
@@ -31,18 +35,29 @@ public class ForcastingService
     private int predictionHorizon;
     private String Algorithem;
 
-    public ForcastingService(TimeSeriesRepo timeSeriesRepo, ForcastRequestRepository forcastRequestRepository) 
+    private double MSE;
+
+    public ForcastingService(TimeSeriesRepo timeSeriesRepo, ForcastRequestRepository forcastRequestRepository, ForcastResultRepository forcastResultRepository) 
     {
         this.timeSeriesRepo = timeSeriesRepo;
         this.forcastRequestRepository = forcastRequestRepository;
+        this.forcastResultRepository = forcastResultRepository;
     }
 
     public boolean isItSeasonality() {
         return isItSeasonality;
     }
 
-    public void setItSeasonality(boolean isItSeasonality) {
+    public void setItSeasonality(String timeSeriesId, boolean isItSeasonality)
+    {
         this.isItSeasonality = isItSeasonality;
+        if(timeSeriesRepo.existsById(timeSeriesId))
+        {
+            TimeSeries ts = timeSeriesRepo.findById(timeSeriesId).orElseThrow();
+            ts.setItSeasonality(isItSeasonality);
+            timeSeriesRepo.save(ts);
+        }    
+        
     }
 
     public int getSeasonalityPeriod() {
@@ -61,14 +76,18 @@ public class ForcastingService
         
     }
 
-    public List<DataPoints> CreateNewForcast(String timeSeriesId, int predictionHorizon, String Algorithm)
+    public ForcastResult CreateNewForcast(String timeSeriesId, int predictionHorizon, String Algorithm, String requestedBy, LocalDateTime requestedAt)
     {
+        //Creating new forcast request
         this.timeSeriesId = timeSeriesId;
         this.predictionHorizon = predictionHorizon;
         this.Algorithem = Algorithm;
-        List<DataPoints> forcastResults = new ArrayList<DataPoints>();
-        ForcastRequest newForcastRequest = new ForcastRequest(timeSeriesId, predictionHorizon, isItSeasonality, Algorithm);
-        forcastRequestRepository.insert(newForcastRequest);
+        List<DataPoints> forcastResultsList = new ArrayList<DataPoints>();
+        ForcastRequest newForcastRequest = new ForcastRequest(timeSeriesId, predictionHorizon, isItSeasonality, Algorithm,requestedBy,requestedAt);
+        newForcastRequest = forcastRequestRepository.insert(newForcastRequest);
+
+        //Doing the forcast
+        Long startTime = System.nanoTime();
 
         TimeSeries ts = timeSeriesRepo.findById(timeSeriesId).orElseThrow(() -> new RuntimeException("TimeSeries not found with id: " + timeSeriesId));;
         List<DataPoints> data = ts.getData();
@@ -77,40 +96,47 @@ public class ForcastingService
         List<DataPoints> auditData = data.subList(splitIndex,data.size());
         switch (Algorithm) {
             case "Average":
-                forcastResults = runAverage(buildingNumbers,auditData);
+                forcastResultsList = runAverage(buildingNumbers,auditData);
                 break;
             case "Exponential Smoothing":
-                forcastResults = runExponentialSmoothing(buildingNumbers,auditData);
+                forcastResultsList = runExponentialSmoothing(buildingNumbers,auditData);
                 break;
             case "Linear Reagression":
-                forcastResults = runLinearReagression(buildingNumbers,auditData);
+                forcastResultsList = runLinearReagression(buildingNumbers,auditData);
                 break;
             case "Moving Average":
-                forcastResults = runMovingAverage(buildingNumbers,auditData);
+                forcastResultsList = runMovingAverage(buildingNumbers,auditData);
                 break;
             case "Holt Winters":
                 if(isItSeasonality)
                 {
-                    forcastResults = runHoltWinters(buildingNumbers,auditData);
+                    forcastResultsList = runHoltWinters(buildingNumbers,auditData);
                 }
                 else
                 {
                     System.out.println("Can't active Holt-Winters algorithem, The data doesn't have seasonality. ");
-                    forcastResults = null;
+                    forcastResultsList = null;
                 }
                 break;
             case "The best algorithem":
                 if(isItSeasonality)
-                    forcastResults = runBestAlgorithm_WithHoltWinters(buildingNumbers,auditData);
+                    forcastResultsList = runBestAlgorithm_WithHoltWinters(buildingNumbers,auditData);
                 else
-                    forcastResults = runBestAlgorithem_WithoutHoltWinters(buildingNumbers,auditData);
+                    forcastResultsList = runBestAlgorithem_WithoutHoltWinters(buildingNumbers,auditData);
                 break;
         
             default:
                 System.out.println("ERROR: User didn't chose any algorithem to activate");
-                forcastResults = null;
+                forcastResultsList = null;
         }
-        return forcastResults;
+        Long endTime = System.nanoTime();
+        long duration = endTime-startTime;
+        String createdBy = requestedBy;
+        LocalDateTime createdAt = requestedAt.plusNanos(duration);
+        ForcastResult forcastResult = new ForcastResult(newForcastRequest.getForcastId(),createdBy, createdAt, Algorithm, MSE, forcastResultsList);
+        forcastResultRepository.insert(forcastResult);
+        return forcastResult;
+        //return forcastResultsList;
     }
 
     /**
@@ -191,7 +217,9 @@ public class ForcastingService
         {
             System.out.println(i+ " : "+forcastList.get(i));
         }
-        
+
+        MSE = minMse;
+        Algorithem = bestModelName;
         return forcastList;
     }
     
@@ -282,6 +310,8 @@ public class ForcastingService
             System.out.println(i+ " : "+forcastList.get(i));
         }
         
+        MSE = minMse;
+        Algorithem = bestModelName;
         return forcastList;
     }
         
@@ -300,6 +330,7 @@ public class ForcastingService
         double maMse = ma.CalculateMse();
         System.out.println("The MSE of Moving Average for this data is "+ maMse);
         List<DataPoints> Predictions = ma.predict(predictionHorizon);
+        MSE = maMse;
         return Predictions;
     }
 
@@ -309,6 +340,7 @@ public class ForcastingService
         double lrMse = lr.CalculateMse();
         System.out.println("The MSE of Linear Regression for this data is "+ lrMse);
         List<DataPoints> Predictions = lr.predict(predictionHorizon);
+        MSE = lrMse;
         return Predictions;
     }
     private List<DataPoints> runExponentialSmoothing(List<DataPoints> buildingNumbers, List<DataPoints> auditData) 
@@ -317,6 +349,8 @@ public class ForcastingService
         double emaMse = ema.CalculateMse();
         System.out.println("The MSE of exponential smoothing is "+emaMse);
         List<DataPoints> Predictions = ema.predict(predictionHorizon);
+
+        MSE = emaMse;
         return Predictions;
     }
 
@@ -327,6 +361,8 @@ public class ForcastingService
         System.out.println("The Mse of Average for the data is "+avgMse);
         List<DataPoints> Predictions = new ArrayList<>();
         Predictions = avg.predict(predictionHorizon);
+
+        MSE = avgMse;
         return Predictions;
     }
     

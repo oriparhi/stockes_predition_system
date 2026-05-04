@@ -21,6 +21,7 @@ public class TimeSeries
     private LocalDateTime createdAt;
     private String creator;
     private Interval interval;
+    private boolean isItSeasonality;
     private int seasonalityPeriod;
 
 
@@ -89,6 +90,16 @@ public class TimeSeries
 
     public void setInterval(Interval interval) {
         this.interval = interval;
+    }
+
+
+    public boolean isItSeasonality() {
+        return isItSeasonality;
+    }
+
+
+    public void setItSeasonality(boolean isItSeasonality) {
+        this.isItSeasonality = isItSeasonality;
     }
 
 
