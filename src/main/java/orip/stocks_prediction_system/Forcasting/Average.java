@@ -1,4 +1,4 @@
-package orip.stocks_prediction_system.Forcasting;
+package orip.stocks_prediction_system.forcasting;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,6 +14,8 @@ public class Average extends AbstractForcastModel
     {
         this.buildingNumbers = new ArrayList<>(buildingNumbers);
         this.auditData = new ArrayList<>(auditData);
+        this.forecastList = new ArrayList<>();
+        this.errorList = new ArrayList<>();
         this.MSE =-1;
         totalSize = buildingNumbers.size()+auditData.size();
     

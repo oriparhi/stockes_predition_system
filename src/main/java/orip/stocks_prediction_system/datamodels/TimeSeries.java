@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.PersistenceCreator;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 
@@ -23,6 +24,10 @@ public class TimeSeries
     private Interval interval;
     private boolean isItSeasonality;
     private int seasonalityPeriod;
+
+    @PersistenceCreator
+    public TimeSeries() {
+    }
 
 
     public TimeSeries(String name, List<DataPoints> data, LocalDateTime createdAt, String creator) 

@@ -1,4 +1,4 @@
-package orip.stocks_prediction_system.Forcasting;
+package orip.stocks_prediction_system.forcasting;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,6 +12,8 @@ public class MovingAverage extends AbstractForcastModel
     {
         this.buildingNumbers = new ArrayList<>(buildingNumbers);
         this.auditData = new ArrayList<>(auditData);
+        this.errorList = new ArrayList<>();
+        this.forecastList = new ArrayList<>();
         this.MSE =-1;
         totalSize = buildingNumbers.size()+auditData.size();
         this.K = 0;
@@ -161,7 +163,10 @@ public class MovingAverage extends AbstractForcastModel
 
             double error = buildingNumbers.get(i).getValue()-forcast;
             errorSquered = error*error;
-            errorList.add(new DataPoints(errorList.getLast().getIndex()+1,errorSquered));
+            if(errorList.isEmpty())
+                errorList.add(new DataPoints(0, errorSquered));
+            else
+                errorList.add(new DataPoints(errorList.getLast().getIndex()+1,errorSquered));
             // 2. עדכון הסכום עבור התחזית הבאה (Sliding Window)
             // מורידים את האיבר הישן ביותר בחלון (i - k)
             // ומוסיפים את האיבר הנוכחי שנכנס לחלון (i)

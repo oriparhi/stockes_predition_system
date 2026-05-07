@@ -7,16 +7,16 @@ import java.util.List;
 import org.springframework.data.mongodb.core.aggregation.ConditionalOperators.Switch;
 import org.springframework.stereotype.Service;
 
-import orip.stocks_prediction_system.Forcasting.Average;
-import orip.stocks_prediction_system.Forcasting.ExponentialSmoothing;
-import orip.stocks_prediction_system.Forcasting.ForcastModel;
-import orip.stocks_prediction_system.Forcasting.HoltWinters_SeasonalityModel;
-import orip.stocks_prediction_system.Forcasting.LinearRegression;
-import orip.stocks_prediction_system.Forcasting.MovingAverage;
 import orip.stocks_prediction_system.datamodels.DataPoints;
 import orip.stocks_prediction_system.datamodels.ForcastRequest;
 import orip.stocks_prediction_system.datamodels.ForcastResult;
 import orip.stocks_prediction_system.datamodels.TimeSeries;
+import orip.stocks_prediction_system.forcasting.Average;
+import orip.stocks_prediction_system.forcasting.ExponentialSmoothing;
+import orip.stocks_prediction_system.forcasting.ForcastModel;
+import orip.stocks_prediction_system.forcasting.HoltWinters_SeasonalityModel;
+import orip.stocks_prediction_system.forcasting.LinearRegression;
+import orip.stocks_prediction_system.forcasting.MovingAverage;
 import orip.stocks_prediction_system.repositories.ForcastRequestRepository;
 import orip.stocks_prediction_system.repositories.ForcastResultRepository;
 import orip.stocks_prediction_system.repositories.TimeSeriesRepo;
@@ -220,6 +220,7 @@ public class ForcastingService
 
         MSE = minMse;
         Algorithem = bestModelName;
+        
         return forcastList;
     }
     

@@ -31,6 +31,11 @@ public class DataPoints
         return value;
     }
 
+    @Override
+    public String toString() {
+        return "DataPoints [index=" + index + ", value=" + value + "]";
+    }
+
     public void setValue(double value) {
         this.value = value;
     }

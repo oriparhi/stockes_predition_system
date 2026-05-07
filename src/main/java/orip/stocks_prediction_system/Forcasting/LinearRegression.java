@@ -1,4 +1,4 @@
-package orip.stocks_prediction_system.Forcasting;
+package orip.stocks_prediction_system.forcasting;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,6 +13,9 @@ public class LinearRegression extends AbstractForcastModel
     {
         this.buildingNumbers = new ArrayList<>(buildingNumbers);
         this.auditData = new ArrayList<>(auditData);
+        //אתחול רשימות ריקות
+        this.forecastList = new ArrayList<>();
+        this.errorList = new ArrayList<>();
         this.MSE =-1;
         this.n = buildingNumbers.size();
         totalSize = n+auditData.size();
