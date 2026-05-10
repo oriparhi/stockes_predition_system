@@ -10,6 +10,9 @@ import com.vaadin.flow.component.template.Id;
 @Document(collection = "ForcastResult")
 public class ForcastResult 
 {
+    
+
+
     @Id
     private String id;
     private String requestId;
@@ -18,6 +21,21 @@ public class ForcastResult
     private String algorithemUsed;
     private double mse;
     private List<DataPoints> forcastResults;
+
+    public ForcastResult() 
+    {
+
+    }
+
+    
+    public ForcastResult(String requestId, LocalDateTime resultDate, String algorithemUsed, double mse,
+            List<DataPoints> forcastResults) {
+        this.requestId = requestId;
+        this.resultDate = resultDate;
+        this.algorithemUsed = algorithemUsed;
+        this.mse = mse;
+        this.forcastResults = forcastResults;
+    }
 
 
     public ForcastResult(String requestId, String createdBy, LocalDateTime resultDate, String algorithemUsed,

@@ -2,3 +2,4 @@
 target/
 src/test/
 src/main/frontend/
+node_modules

@@ -1,5 +1,8 @@
 package orip.stocks_prediction_system.ui;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.avatar.Avatar;
 import com.vaadin.flow.component.html.Anchor;
@@ -30,6 +33,11 @@ public class AppNavBarLayout extends AppLayout
         navbarPanel.add(space);
         navbarPanel.expand(space);
         
+        HorizontalLayout DateTimePanel = new HorizontalLayout(Alignment.BASELINE);
+        String date = "Date: "+LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE);
+        String time = "Time: "+LocalDateTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss"));
+        DateTimePanel.add(date+" | "+time);
+
         Avatar userAvatar = new Avatar("Ori Parhi","https://images.icon-icons.com/1879/PNG/512/iconfinder-7-avatar-2754582_120519.png");
         userAvatar.getStyle().setMargin("0px");
         userAvatar.getStyle().setMarginTop("10px");
@@ -42,7 +50,7 @@ public class AppNavBarLayout extends AppLayout
         // H4 info = new H4("Username:"+username+"  SessionID: "+SessionId);
 
 
-        navbarPanel.add(userAvatar);
+        navbarPanel.add(DateTimePanel,userAvatar);
         //addToNavbar(navbarPanel,info);
         addToNavbar(navbarPanel);
     }

@@ -66,6 +66,10 @@
             <artifactId>commons-math3</artifactId>
             <version>3.6.1</version>
         </dependency>
+		<dependency>
+			<groupId>com.vaadin</groupId>
+			<artifactId>vaadin-charts-flow</artifactId>
+		</dependency>
 		
 	</dependencies>
 	<dependencyManagement>

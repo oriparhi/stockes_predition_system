@@ -16,7 +16,25 @@ public class ForcastRequest
     private String Algorithm;
     private String requestedBy;
     private LocalDateTime requestedAt;
+    private boolean isItSeasonality;
     
+
+    public ForcastRequest() {
+    }
+
+
+
+    public ForcastRequest(String timeSeriesId, int predictionHorizon, String algorithm, String requestedBy,
+            LocalDateTime requestedAt, boolean isItSeasonality) {
+        this.timeSeriesId = timeSeriesId;
+        this.predictionHorizon = predictionHorizon;
+        Algorithm = algorithm;
+        this.requestedBy = requestedBy;
+        this.requestedAt = requestedAt;
+        this.isItSeasonality = isItSeasonality;
+    }
+
+
 
     public ForcastRequest(String timeSeriesId, int predictionHorizon, boolean isItSeasonality, String algorithm, String requestedBy, LocalDateTime requestedAt) {
         this.timeSeriesId = timeSeriesId;
@@ -24,6 +42,18 @@ public class ForcastRequest
         Algorithm = algorithm;
         this.requestedBy = requestedBy;
         this.requestedAt = requestedAt;
+    }
+
+
+
+    public boolean isItSeasonality() {
+        return isItSeasonality;
+    }
+
+
+
+    public void setItSeasonality(boolean isItSeasonality) {
+        this.isItSeasonality = isItSeasonality;
     }
 
 
