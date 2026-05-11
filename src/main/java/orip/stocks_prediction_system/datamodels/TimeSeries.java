@@ -1,8 +1,6 @@
 package orip.stocks_prediction_system.datamodels;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.data.annotation.Id;
@@ -17,7 +15,7 @@ public class TimeSeries
 {
     @Id
     private String timeSeriesId; 
-    private String name;
+    private String dataName;
     private List<DataPoints> data;
     private LocalDateTime createdAt;
     private String creator;
@@ -30,17 +28,17 @@ public class TimeSeries
     }
 
 
-    public TimeSeries(String name, List<DataPoints> data, LocalDateTime createdAt, String creator) 
+    public TimeSeries(String dataName, List<DataPoints> data, LocalDateTime createdAt, String creator) 
     {
-        this.name = name;
+        this.dataName = dataName;
         this.data = data;
         this.createdAt = createdAt;
         this.creator = creator;
     }
     
 
-    public TimeSeries(String name, List<DataPoints> data, LocalDateTime createdAt, String creator, Interval interval) {
-        this.name = name;
+    public TimeSeries(String dataName, List<DataPoints> data, LocalDateTime createdAt, String creator, Interval interval) {
+        this.dataName = dataName;
         this.data = data;
         this.createdAt = createdAt;
         this.creator = creator;
@@ -58,12 +56,12 @@ public class TimeSeries
     }
 
 
-    public String getName() {
-        return name;
+    public String getDataName() {
+        return dataName;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setDataName(String dataName) {
+        this.dataName = dataName;
     }
 
     public List<DataPoints> getData() {

@@ -1,17 +1,28 @@
 package orip.stocks_prediction_system.utilities;
 
-public enum Interval 
-{
-    MIN_1,
-    MIN_5,
-    MIN_15,
-    MIN_30,
-    MIN_45,
-    HOUR_1,
-    HOUR_2,
-    HOUR_4,
-    HOUR_8,
-    DAY_1,
-    WEEK_1,
-    MONTH_1
+public enum Interval {
+    MIN_1("1min"),
+    MIN_5("5min"),
+    MIN_15("15min"),
+    MIN_30("30min"),
+    MIN_45("45min"),
+    HOUR_1("1h"),
+    HOUR_2("2h"),
+    HOUR_4("4h"),
+    HOUR_8("8h"),
+    DAY_1("1day"),
+    WEEK_1("1week"),
+    MONTH_1("1month");
+
+    private final String apiValue;
+
+    // בנאי המקבל את הערך עבור ה-API
+    Interval(String apiValue) {
+        this.apiValue = apiValue;
+    }
+
+    // מתודה לשליפת הערך
+    public String getApiValue() {
+        return apiValue;
+    }
 }

@@ -153,7 +153,11 @@ public class UploadDataView extends VerticalLayout
         StockSymbolField = new TextField("Stock Symbol", e -> symbol = e.getValue());
         StockSymbolField.setMinLength(1);
         StockSymbolField.setMaxLength(5);
-        StockSymbolField.addValueChangeListener(e -> updateCsvStatus());
+        StockSymbolField.addValueChangeListener(e -> {
+            this.symbol = e.getValue();
+            updateCsvStatus();
+            fetchApiDataIfReady();
+        });
         uploadApi.add(StockSymbolField);
 
         outputSizeEntryField = new IntegerField("Output size",e -> outputsize = e.getValue());
@@ -161,7 +165,12 @@ public class UploadDataView extends VerticalLayout
         outputSizeEntryField.setMin(1);
         outputSizeEntryField.setMax(5000);
         outputSizeEntryField.setStepButtonsVisible(true);
-        outputSizeEntryField.addValueChangeListener(e -> updateCsvStatus());
+        outputSizeEntryField.addValueChangeListener(e -> {
+            // IntegerField.getValue() מחזיר Integer (עטיפה), יכול להיות null
+            this.outputsize = (e.getValue() != null) ? e.getValue() : 0;
+            updateCsvStatus();
+            fetchApiDataIfReady();
+        });
         outputSizeEntryField.setI18n(new IntegerFieldI18n()
             .setRequiredErrorMessage("Field is required")
             .setBadInputErrorMessage("Invalid number format")
@@ -172,22 +181,12 @@ public class UploadDataView extends VerticalLayout
         intervalComboBox = new ComboBox<>("Choose the time interval",e -> interval = e.getValue());
         intervalComboBox.setItems(Interval.values());
         intervalComboBox.addValueChangeListener(e -> {
-            updateCsvStatus();
             this.interval = e.getValue();
+            updateCsvStatus();
+            fetchApiDataIfReady();
         });
         uploadApi.add(intervalComboBox);
-
-        //TODO: לשחרר את הערות של העשר שורות הבאות שבהערה רק כאשר אני יוצר את הממשק של הטיפול בAPI
-        // apiData = ApiReaderService.callApi(symbol,interval,outputsize);
-        // if(apiData!=null)
-        // {
-        //     newTimeSeriesId = ApiReaderService.CreateNewTimeSeries(
-        //     this.username,
-        //     LocalDateTime.now(),
-        //     apiData,
-        //     symbol
-        //     );
-        // }
+        
 
         uploadData.add(uploadApi);
         // סוף עבודה על הפאנל העלאה של הAPI
@@ -340,5 +339,35 @@ public class UploadDataView extends VerticalLayout
     // אם המשתמש התחיל למלא API, נבטל את האפשרות להעלות CSV
     upload.setEnabled(!anyApiFieldFilled);
     uploadCsv.getElement().getStyle().set("opacity", anyApiFieldFilled ? "0.5" : "1.0");
+    }
+
+    private void fetchApiDataIfReady()
+    {
+        if(symbol!=null && !symbol.trim().isEmpty() && interval != null && outputsize>0)
+        {
+            try 
+            {
+                apiData = apiReaderService.getStockData(symbol,interval,outputsize);
+                if(apiData!=null&& !apiData.isEmpty())
+                {
+                    newTimeSeriesId = apiReaderService.CreateNewTimeSeries(
+                    symbol,
+                    LocalDateTime.now(),
+                    apiData,
+                    this.username,
+                    this.interval
+                    );
+                }
+                Notification.show("API data loaded and saved!", 3000, Position.TOP_CENTER)
+                            .addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+                
+                updateCsvStatus();
+            } catch (Exception e) 
+            {
+                System.out.println(e);
+                Notification.show("Failed to fetch API data: " + e.getMessage(), 5000, Position.MIDDLE)
+                        .addThemeVariants(NotificationVariant.LUMO_ERROR);
+            }
+        }
     }
 }

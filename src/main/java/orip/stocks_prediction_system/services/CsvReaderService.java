@@ -73,6 +73,7 @@ public class CsvReaderService
         TimeSeries newTimeSeries = new TimeSeries(fileName, data, createdAt, creator);
         timeSeriesRepo.insert(newTimeSeries);
         String newTimeSeriesId = newTimeSeries.getTimeSeriesId();
+        System.out.println("newTimeSeriesId: "+newTimeSeriesId);
         return newTimeSeriesId;
 
     }

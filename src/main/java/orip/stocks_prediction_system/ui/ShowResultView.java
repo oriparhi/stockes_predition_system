@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.vaadin.flow.component.HtmlComponent;
 import com.vaadin.flow.component.Text;
+import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.charts.Chart;
 import com.vaadin.flow.component.charts.model.ChartType;
 import com.vaadin.flow.component.charts.model.Configuration;
@@ -26,6 +27,7 @@ import com.vaadin.flow.router.Route;
 import orip.stocks_prediction_system.datamodels.DataPoints;
 import orip.stocks_prediction_system.datamodels.ForcastResult;
 import orip.stocks_prediction_system.services.ShowResultService;
+import orip.stocks_prediction_system.utilities.RouteHelper;
 
 @Route(value = "/showResults", layout = AppNavBarLayout.class)
 public class ShowResultView extends VerticalLayout implements HasUrlParameter<String>
@@ -120,8 +122,12 @@ public class ShowResultView extends VerticalLayout implements HasUrlParameter<St
         add(new H3("The results of the prediction in a table"),resultTable);
 
         
-
-
+        HorizontalLayout pageButtonsLayout = new HorizontalLayout();
+        Button newPrediction = new Button("Create new prediction");
+        newPrediction.addClickListener(clickEvent -> {
+            RouteHelper.navigateTo("/upload");
+        });
+        add(newPrediction);
         //allow scrolling if needed
         this.getStyle().set("overflow-y", "auto");
     }
@@ -148,7 +154,7 @@ public class ShowResultView extends VerticalLayout implements HasUrlParameter<St
             errorNotification.addThemeVariants(NotificationVariant.LUMO_ERROR);
         }
         title1.setText("This is the result of the prediction made by "+forcastResult.getCreatedBy()+" at "+forcastResult.getResultDate()); 
-        algorithmAndMse.setText("The aglorithem that was used is" +forcastResult.getAlgorithemUsed()+" which his MSE is "+forcastResult.getMse());;
+        algorithmAndMse.setText("The aglorithem that was used is " +forcastResult.getAlgorithemUsed()+" which his MSE is "+forcastResult.getMse());;
 
         addResultsToTheTable();
         addResultsToTheChart();

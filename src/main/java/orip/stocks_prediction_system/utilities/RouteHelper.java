@@ -4,9 +4,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.router.RouteConfiguration;
 
-/**
- * @author ILAN PERETZ | 23.12.2025
- */
+
 public class RouteHelper
 {
    public static <T extends Component> void navigateTo(Class<T> page)

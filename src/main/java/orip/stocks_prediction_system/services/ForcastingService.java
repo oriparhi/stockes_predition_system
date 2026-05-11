@@ -76,14 +76,14 @@ public class ForcastingService
         
     }
 
-    public ForcastResult CreateNewForcast(String timeSeriesId, int predictionHorizon, String Algorithm, String requestedBy, LocalDateTime requestedAt)
+    public ForcastResult CreateNewForcast(String timeSeriesId, int predictionHorizon, String algorithem, String requestedBy, LocalDateTime requestedAt)
     {
         //Creating new forcast request
         this.timeSeriesId = timeSeriesId;
         this.predictionHorizon = predictionHorizon;
-        this.Algorithem = Algorithm;
+        this.Algorithem = algorithem;
         List<DataPoints> forcastResultsList = new ArrayList<DataPoints>();
-        ForcastRequest newForcastRequest = new ForcastRequest(timeSeriesId, predictionHorizon, isItSeasonality, Algorithm,requestedBy,requestedAt);
+        ForcastRequest newForcastRequest = new ForcastRequest(timeSeriesId, predictionHorizon, isItSeasonality, algorithem,requestedBy,requestedAt);
         newForcastRequest = forcastRequestRepository.insert(newForcastRequest);
 
         //Doing the forcast
@@ -94,7 +94,7 @@ public class ForcastingService
         int splitIndex = (int) (data.size() * 0.8);
         List<DataPoints> buildingNumbers = data.subList(0,splitIndex);
         List<DataPoints> auditData = data.subList(splitIndex,data.size());
-        switch (Algorithm) {
+        switch (algorithem) {
             case "Average":
                 forcastResultsList = runAverage(buildingNumbers,auditData);
                 break;
@@ -133,7 +133,7 @@ public class ForcastingService
         long duration = endTime-startTime;
         String createdBy = requestedBy;
         LocalDateTime createdAt = requestedAt.plusNanos(duration);
-        ForcastResult forcastResult = new ForcastResult(newForcastRequest.getForcastId(),createdBy, createdAt, Algorithm, MSE, forcastResultsList);
+        ForcastResult forcastResult = new ForcastResult(newForcastRequest.getForcastId(),createdBy, createdAt, this.Algorithem, MSE, forcastResultsList);
         forcastResultRepository.insert(forcastResult);
         return forcastResult;
         //return forcastResultsList;
@@ -219,7 +219,7 @@ public class ForcastingService
         }
 
         MSE = minMse;
-        Algorithem = bestModelName;
+        this.Algorithem = bestModelName;
         
         return forcastList;
     }
@@ -312,7 +312,7 @@ public class ForcastingService
         }
         
         MSE = minMse;
-        Algorithem = bestModelName;
+        this.Algorithem = bestModelName;
         return forcastList;
     }
         

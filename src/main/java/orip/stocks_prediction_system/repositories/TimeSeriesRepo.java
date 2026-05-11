@@ -12,13 +12,13 @@ import orip.stocks_prediction_system.datamodels.TimeSeries;
 @Repository
 public interface TimeSeriesRepo extends MongoRepository<TimeSeries, String>
 {
-   public List<TimeSeries> findAllByName(String name);
+   public List<TimeSeries> findAllByDataName(String dataName);
 
-   public TimeSeries findOneByNameAndCreator(String name,String creator);
+   public TimeSeries findOneByDataNameAndCreator(String dataName,String creator);
 
-   public List<TimeSeries> findByNameLike(String name);
+   public List<TimeSeries> findByDataNameLike(String dataName);
 
-   public TimeSeries findOneByNameAndCreatedAt(String name, LocalDateTime createdAt);
+   public TimeSeries findOneByDataNameAndCreatedAt(String dataName, LocalDateTime createdAt);
 
    // public TimeSeries findOneById(String timeSeriesId);
 
