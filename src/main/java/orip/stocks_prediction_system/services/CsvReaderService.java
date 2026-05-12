@@ -12,6 +12,8 @@ import org.springframework.stereotype.Service;
 import orip.stocks_prediction_system.datamodels.DataPoints;
 import orip.stocks_prediction_system.datamodels.TimeSeries;
 import orip.stocks_prediction_system.repositories.TimeSeriesRepo;
+import orip.stocks_prediction_system.utilities.Interval;
+import orip.stocks_prediction_system.utilities.ReadCsvResponse;
 
 @Service
 public class CsvReaderService 
@@ -25,10 +27,11 @@ public class CsvReaderService
         
     }
 
-    public List<DataPoints> ReadCsv(InputStream inputStream, String FileName)
+    public ReadCsvResponse ReadCsv(InputStream inputStream, String FileName)
     {
         List<DataPoints> data = new ArrayList<>();
         String fileName = FileName;
+        String header = null;
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream)))
         {
             String line;
@@ -37,7 +40,8 @@ public class CsvReaderService
 
             while((line = reader.readLine())!=null)
             {
-                if (isHeader) {
+                if (isHeader && !line.trim().isEmpty()) {
+                    header = line.trim();
                     isHeader = false;
                     continue;
                 }
@@ -63,18 +67,17 @@ public class CsvReaderService
             System.out.println(e);
             return null;
         }
-        return data;
+        return new ReadCsvResponse(data,header);
     }
 
-    public String CreateNewTimeSeries(String Creator, LocalDateTime CreatedAt,List<DataPoints> data, String fileName)
+    public String CreateNewTimeSeries(String Creator, LocalDateTime CreatedAt,List<DataPoints> data, String fileName,String title,Interval interval)
     {
         String creator = Creator;
         LocalDateTime createdAt = CreatedAt;
-        TimeSeries newTimeSeries = new TimeSeries(fileName, data, createdAt, creator);
+        TimeSeries newTimeSeries = new TimeSeries(fileName, data, createdAt, creator,interval,title);
         timeSeriesRepo.insert(newTimeSeries);
         String newTimeSeriesId = newTimeSeries.getTimeSeriesId();
         System.out.println("newTimeSeriesId: "+newTimeSeriesId);
         return newTimeSeriesId;
-
     }
 }

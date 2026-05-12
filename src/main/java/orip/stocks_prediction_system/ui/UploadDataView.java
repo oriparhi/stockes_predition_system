@@ -33,6 +33,9 @@ import orip.stocks_prediction_system.services.ApiReaderService;
 import orip.stocks_prediction_system.services.CsvReaderService;
 import orip.stocks_prediction_system.services.ForcastingService;
 import orip.stocks_prediction_system.utilities.Interval;
+import orip.stocks_prediction_system.utilities.ReadCsvResponse;
+import orip.stocks_prediction_system.utilities.TopStocks;
+import orip.stocks_prediction_system.utilities.UtilsHelper;
 
 @Route(value = "/upload",layout = AppNavBarLayout.class)
 public class UploadDataView extends VerticalLayout
@@ -46,9 +49,10 @@ public class UploadDataView extends VerticalLayout
     private VerticalLayout uploadCsv;
     private VerticalLayout uploadApi;
     private Upload upload;
-    private TextField StockSymbolField;
+    private ComboBox<String> stocksComboBox;
     private IntegerField outputSizeEntryField;
-    private ComboBox<Interval> intervalComboBox;
+    private ComboBox<Interval> apiIntervalComboBox;
+    private ComboBox<Interval> csvIntervalComboBox;
     
 
     private LocalDateTime time;
@@ -63,6 +67,7 @@ public class UploadDataView extends VerticalLayout
 
     private String algorithem;
     private int predictionHorizon;
+    private String csvTitle;
 
     public UploadDataView(CsvReaderService csvReaderService, ApiReaderService apiReaderService,ForcastingService forcastingService) 
     {
@@ -72,12 +77,12 @@ public class UploadDataView extends VerticalLayout
         this.isItSeasonality = false;
 
         this.username = "Guest";
-        WelcomeMsg = "Hello "+username;
-        title = new H1(WelcomeMsg);
+        // WelcomeMsg = "Hello "+username;
+        // title = new H1(WelcomeMsg);
         time = LocalDateTime.now();
 
-        add(title);
-        add(new H2(time.toString()));
+        // add(title);
+        // add(new H2(time.toString()));
         add(new H3("Please enter here that data that you want to upload!"));
         add(new H3("You can do that by upload your CSV or by choosing a stock you want to forcast"));
         
@@ -96,6 +101,15 @@ public class UploadDataView extends VerticalLayout
         uploadCsv.getStyle().set("border-right", "2px solid black"); 
         uploadCsv.getStyle().set("padding-right", "20px");
         
+        csvIntervalComboBox = new ComboBox<>("Choose the time interval");
+        csvIntervalComboBox.setItems(Interval.values());
+        csvIntervalComboBox.setRequiredIndicatorVisible(true);
+        //csvIntervalComboBox.setValue(Interval.DAY_1);
+        // ברגע שמשנים את הערך, בודקים אם אפשר לאפשר את העלאת הקובץ
+        csvIntervalComboBox.addValueChangeListener(e -> {
+            this.interval = e.getValue();
+            updateCsvStatus(); 
+        });
 
         InMemoryUploadHandler inMemoryHandler = UploadHandler.inMemory((metadata,data) ->{
 
@@ -103,33 +117,38 @@ public class UploadDataView extends VerticalLayout
             Notification notify = new Notification("", 5000, Position.TOP_CENTER);
             try 
             {
-              parsedData = csvReaderService.ReadCsv(new ByteArrayInputStream(data), fileName);
-              if(parsedData!=null)
-              {
-                newTimeSeriesId = csvReaderService.CreateNewTimeSeries(
-                    this.username,
-                    LocalDateTime.now(),
-                    parsedData,
-                    fileName
-                );
-                notify.setText("Csv was uploaded successfully");
-                notify.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
-              }
-              else{
-                throw new Exception("There is no data");
-              }
-                
-            } catch (Exception e) {
-                System.out.println(e);
-                e.printStackTrace();
-                String notificationText = "There was a problem with the data uploading!\n "+e;
-                notify.setText(notificationText);
-                notify.addThemeVariants(NotificationVariant.LUMO_ERROR);
-            }
+                ReadCsvResponse res = csvReaderService.ReadCsv(new ByteArrayInputStream(data), fileName);
+                parsedData = res.data();
+                csvTitle = res.title();
+                if(parsedData!=null)
+                {
+                    newTimeSeriesId = csvReaderService.CreateNewTimeSeries(
+                        this.username,
+                        LocalDateTime.now(),
+                        parsedData,
+                        fileName,
+                        csvTitle,
+                        this.interval
+                    );
+                    notify.setText("Csv was uploaded successfully");
+                    notify.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+                }
+                else{
+                    throw new Exception("There is no data");
+                }
+                    
+                } catch (Exception e) {
+                    System.out.println(e);
+                    e.printStackTrace();
+                    String notificationText = "There was a problem with the data uploading!\n "+e;
+                    notify.setText(notificationText);
+                    notify.addThemeVariants(NotificationVariant.LUMO_ERROR);
+                }
         }); 
 
         upload = new Upload(inMemoryHandler);
         upload.setAcceptedFileTypes(".csv");
+        upload.setEnabled(false);
         upload.addSucceededListener(event ->{ 
             uploadApi.setEnabled(false);
             uploadApi.getStyle().set("opacity", "0.5");
@@ -139,7 +158,7 @@ public class UploadDataView extends VerticalLayout
         attentionPlease.getStyle().set("color", "red");
         attentionPlease.getStyle().set("font-weight", "bold");
 
-        uploadCsv.add(new H2("Enter here your csv,"),attentionPlease,upload);
+        uploadCsv.add(new H2("Enter here your csv,"),attentionPlease,csvIntervalComboBox,upload);
 
         uploadData.add(uploadCsv);
         // סוף עבודה על הפאנל העלה של הCSV
@@ -150,26 +169,40 @@ public class UploadDataView extends VerticalLayout
         uploadApi.getStyle().set("padding-left", "20px");
 
         uploadApi.add(new H2("Enter here the stock's symbol/ticker"));
-        StockSymbolField = new TextField("Stock Symbol", e -> symbol = e.getValue());
-        StockSymbolField.setMinLength(1);
-        StockSymbolField.setMaxLength(5);
-        StockSymbolField.addValueChangeListener(e -> {
-            this.symbol = e.getValue();
-            updateCsvStatus();
-            fetchApiDataIfReady();
+        stocksComboBox = new ComboBox<>("Stock Symbol");
+        stocksComboBox.setItems(TopStocks.getAllTickers());
+        stocksComboBox.setValue(TopStocks.AAPL.getApiValue());//עדכון ערך דיפולטיבי
+        this.symbol = TopStocks.AAPL.getApiValue();
+        stocksComboBox.setAllowCustomValue(true);
+        stocksComboBox.addCustomValueSetListener(e -> {
+            String customValue = e.getDetail().toUpperCase().trim();
+            if ((!customValue.isEmpty())&&((customValue.length() >= 1 && customValue.length() <= 5))) 
+            {
+                stocksComboBox.setValue(customValue); // זה יפעיל אוטומטית את ה-ValueChangeListener למטה
+            }
+            else{
+                UtilsHelper.showNification("Symbol must be 1-5 characters", 5000, Position.TOP_CENTER, NotificationVariant.LUMO_ERROR);
+            }
         });
-        uploadApi.add(StockSymbolField);
+        stocksComboBox.addValueChangeListener(e -> {
+            this.symbol = e.getValue().toString();
+            updateCsvStatus();
+            // fetchApiDataIfReady();
+        });
+        uploadApi.add(stocksComboBox);
 
         outputSizeEntryField = new IntegerField("Output size",e -> outputsize = e.getValue());
         outputSizeEntryField.setRequiredIndicatorVisible(true);
         outputSizeEntryField.setMin(1);
         outputSizeEntryField.setMax(5000);
+        outputSizeEntryField.setValue(30);
+        this.outputsize = 30;
         outputSizeEntryField.setStepButtonsVisible(true);
         outputSizeEntryField.addValueChangeListener(e -> {
             // IntegerField.getValue() מחזיר Integer (עטיפה), יכול להיות null
             this.outputsize = (e.getValue() != null) ? e.getValue() : 0;
             updateCsvStatus();
-            fetchApiDataIfReady();
+            // fetchApiDataIfReady();
         });
         outputSizeEntryField.setI18n(new IntegerFieldI18n()
             .setRequiredErrorMessage("Field is required")
@@ -178,14 +211,22 @@ public class UploadDataView extends VerticalLayout
             .setMaxErrorMessage("The output size must be 5000 maximum"));
         uploadApi.add(outputSizeEntryField);
 
-        intervalComboBox = new ComboBox<>("Choose the time interval",e -> interval = e.getValue());
-        intervalComboBox.setItems(Interval.values());
-        intervalComboBox.addValueChangeListener(e -> {
+        apiIntervalComboBox = new ComboBox<>("Choose the time interval",e -> interval = e.getValue());
+        apiIntervalComboBox.setItems(Interval.values());
+        apiIntervalComboBox.setValue(Interval.DAY_1);
+        this.interval = Interval.DAY_1;
+        apiIntervalComboBox.addValueChangeListener(e -> {
             this.interval = e.getValue();
             updateCsvStatus();
-            fetchApiDataIfReady();
+            // fetchApiDataIfReady();
         });
-        uploadApi.add(intervalComboBox);
+        uploadApi.add(apiIntervalComboBox);
+        Button fetchApiData = new Button("Fetch Api Data");
+        fetchApiData.addClickListener(e -> {
+            fetchApiDataIfReady();
+            UtilsHelper.showNification("Operation succeded",3000,Position.MIDDLE, NotificationVariant.LUMO_SUCCESS );
+        });
+        uploadApi.add(fetchApiData);
         
 
         uploadData.add(uploadApi);
@@ -263,6 +304,8 @@ public class UploadDataView extends VerticalLayout
         horizonEnteryField.setRequiredIndicatorVisible(true);
         horizonEnteryField.setMin(1);
         horizonEnteryField.setStepButtonsVisible(true);
+        horizonEnteryField.setValue(15);
+        this.predictionHorizon = 15;
         horizonEnteryField.setI18n(new IntegerFieldI18n()
             .setRequiredErrorMessage("Field is required")
             .setBadInputErrorMessage("Invalid number format"));
@@ -332,12 +375,13 @@ public class UploadDataView extends VerticalLayout
      */
     private void updateCsvStatus() 
     {
-    boolean anyApiFieldFilled = (StockSymbolField.getValue() != null && !StockSymbolField.getValue().isEmpty()) ||
+    boolean anyApiFieldFilled = (stocksComboBox.getValue() != null && !stocksComboBox.getValue().isEmpty()) ||
                                  (outputSizeEntryField.getValue() != null) ||
-                                 (intervalComboBox.getValue() != null);
+                                 (apiIntervalComboBox.getValue() != null);
     
-    // אם המשתמש התחיל למלא API, נבטל את האפשרות להעלות CSV
-    upload.setEnabled(!anyApiFieldFilled);
+    boolean isCsvIntervalSelected = csvIntervalComboBox.getValue() != null;
+    // Enable the option to upload CSV only when the API is empty and the user chose an interval for the CSV
+    upload.setEnabled(!anyApiFieldFilled && isCsvIntervalSelected);
     uploadCsv.getElement().getStyle().set("opacity", anyApiFieldFilled ? "0.5" : "1.0");
     }
 

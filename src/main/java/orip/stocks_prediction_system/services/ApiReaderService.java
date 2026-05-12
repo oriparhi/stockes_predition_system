@@ -92,7 +92,8 @@ public class ApiReaderService {
 
     public String CreateNewTimeSeries(String Creator, LocalDateTime CreatedAt,List<DataPoints> data, String stockSymbol,Interval interval)
     {
-        TimeSeries newTimeSeries = new TimeSeries(stockSymbol, data, CreatedAt, Creator, interval);
+        String mesurmentUnit = "$";
+        TimeSeries newTimeSeries = new TimeSeries(stockSymbol+" stocks", data, CreatedAt, Creator, interval,mesurmentUnit);
         timeSeriesRepo.insert(newTimeSeries);
         String newTimeSeriesId = newTimeSeries.getTimeSeriesId();
         System.out.println("newTimeSeriesId: "+newTimeSeriesId);

@@ -22,28 +22,49 @@ public class TimeSeries
     private Interval interval;
     private boolean isItSeasonality;
     private int seasonalityPeriod;
+    private String title;
 
     @PersistenceCreator
     public TimeSeries() {
     }
 
 
-    public TimeSeries(String dataName, List<DataPoints> data, LocalDateTime createdAt, String creator) 
+    public TimeSeries(String dataName, List<DataPoints> data, LocalDateTime createdAt, String creator,Interval interval, String title) 
     {
         this.dataName = dataName;
         this.data = data;
         this.createdAt = createdAt;
         this.creator = creator;
+        this.interval = interval;
+        this.title = title;
     }
-    
 
-    public TimeSeries(String dataName, List<DataPoints> data, LocalDateTime createdAt, String creator, Interval interval) {
+
+    public TimeSeries(String dataName, List<DataPoints> data, LocalDateTime createdAt, String creator, String title) {
         this.dataName = dataName;
         this.data = data;
         this.createdAt = createdAt;
         this.creator = creator;
-        this.interval = interval;
+        this.title = title;
     }
+
+
+    // public TimeSeries(String dataName, List<DataPoints> data, LocalDateTime createdAt, String creator) 
+    // {
+    //     this.dataName = dataName;
+    //     this.data = data;
+    //     this.createdAt = createdAt;
+    //     this.creator = creator;
+    // }
+    
+
+    // public TimeSeries(String dataName, List<DataPoints> data, LocalDateTime createdAt, String creator, Interval interval) {
+    //     this.dataName = dataName;
+    //     this.data = data;
+    //     this.createdAt = createdAt;
+    //     this.creator = creator;
+    //     this.interval = interval;
+    // }
 
 
     public Interval getInterval() {
@@ -113,6 +134,18 @@ public class TimeSeries
 
     public void setSeasonalityPeriod(int seasonalityPeriod) {
         this.seasonalityPeriod = seasonalityPeriod;
+    }
+
+    
+
+
+    public String getTitle() {
+        return title;
+    }
+
+
+    public void setTitle(String title) {
+        this.title = title;
     }
 
 

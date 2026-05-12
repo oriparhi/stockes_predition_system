@@ -63,5 +63,59 @@ public class ShowResultService
         }
         else return null;
     }
+
+    public String getTitle(ForcastResult forcastResult)
+    {
+        String forcastRequestId = forcastResult.getRequestId();
+        if(forcastRequestRepository.existsById(forcastRequestId))
+        {
+            ForcastRequest FRequest = forcastRequestRepository.findById(forcastRequestId).orElseThrow();
+            String timeSeriesId = FRequest.getTimeSeriesId();
+            if(timeSeriesRepo.existsById(timeSeriesId))
+            {
+                TimeSeries ts = timeSeriesRepo.findById(timeSeriesId).orElseThrow();
+                String title = ts.getTitle();
+                return title;
+            }
+            else return null;
+        }
+        else return null;
+    }
+
+    public String getDataName(ForcastResult forcastResult) 
+    {
+        String forcastRequestId = forcastResult.getRequestId();
+        if(forcastRequestRepository.existsById(forcastRequestId))
+        {
+            ForcastRequest FRequest = forcastRequestRepository.findById(forcastRequestId).orElseThrow();
+            String timeSeriesId = FRequest.getTimeSeriesId();
+            if(timeSeriesRepo.existsById(timeSeriesId))
+            {
+                TimeSeries ts = timeSeriesRepo.findById(timeSeriesId).orElseThrow();
+                String dataName = ts.getDataName();
+                return dataName;
+            }
+            else return null;
+        }
+        else return null;
+    }
+
+    public Integer getDataSize(ForcastResult forcastResult) 
+    {
+        String forcastRequestId = forcastResult.getRequestId();
+        if(forcastRequestRepository.existsById(forcastRequestId))
+        {
+            ForcastRequest FRequest = forcastRequestRepository.findById(forcastRequestId).orElseThrow();
+            String timeSeriesId = FRequest.getTimeSeriesId();
+            if(timeSeriesRepo.existsById(timeSeriesId))
+            {
+                TimeSeries ts = timeSeriesRepo.findById(timeSeriesId).orElseThrow();
+                Integer dataSize = ts.getData().size();
+                return dataSize;
+            }
+            else return null;
+        }
+        else return null;
+    }
     
 }

@@ -23,7 +23,7 @@ public class AppNavBarLayout extends AppLayout
         navbarPanel.setWidthFull();
         navbarPanel.getStyle().setMargin("10px");
         
-        navbarPanel.add(new H2("Spring-Demo App"));
+        navbarPanel.add(new H2("TrendWise"));
         navbarPanel.add(new RouterLink("Login Page", UserView.class));
         navbarPanel.add(" | ");
         navbarPanel.add(new RouterLink("Upload data", UploadDataView.class));

@@ -27,7 +27,9 @@ import com.vaadin.flow.router.Route;
 import orip.stocks_prediction_system.datamodels.DataPoints;
 import orip.stocks_prediction_system.datamodels.ForcastResult;
 import orip.stocks_prediction_system.services.ShowResultService;
+import orip.stocks_prediction_system.utilities.Interval;
 import orip.stocks_prediction_system.utilities.RouteHelper;
+import orip.stocks_prediction_system.utilities.UtilsHelper;
 
 @Route(value = "/showResults", layout = AppNavBarLayout.class)
 public class ShowResultView extends VerticalLayout implements HasUrlParameter<String>
@@ -41,28 +43,36 @@ public class ShowResultView extends VerticalLayout implements HasUrlParameter<St
     private ForcastResult forcastResult;
     private List<DataPoints> forcastList;
     private DataSeries forcasts;
+    private Text indexText;
+    private Text valueText; 
 
-    private H4 title1;
-    private H4 algorithmAndMse;
+    private H3 userAndDate;
+    private H3 predictionDetails;
+    private H3 algorithmAndMse;
     
     public ShowResultView(ShowResultService showResultService) 
     {
         this.showResultService = showResultService;
-        this.title1 =new H4(" ");
-        this.algorithmAndMse = new H4(" ");
+        this.userAndDate =new H3(" ");
+        this.predictionDetails = new H3(" ");
+        this.algorithmAndMse = new H3(" ");
+        this.indexText = new Text("Index");
+        this.valueText = new Text("Value");
 
         this.setHeight(null);
         this.setPadding(true);
         this.setSpacing(true);
 
         add(new H1("Forcast Results"));
-        add(title1,algorithmAndMse);
+        add(userAndDate,predictionDetails,algorithmAndMse);
         
 
         //יצירת גרפים לתצוגה ברורה יותר של התוצאות
         resultsChart = new Chart(ChartType.LINE);
         resultsChartsConf = resultsChart.getConfiguration();
         
+        // indexText.setText("Index");
+        // valueText.setText("Value");
         resultsChartsConf.setTitle("Results Graph");
         resultsChartsConf.getxAxis().setTitle("Index");
         resultsChartsConf.getyAxis().setTitle("Value");
@@ -153,30 +163,57 @@ public class ShowResultView extends VerticalLayout implements HasUrlParameter<St
             // הוספת צבע אדום של שגיאה
             errorNotification.addThemeVariants(NotificationVariant.LUMO_ERROR);
         }
-        title1.setText("This is the result of the prediction made by "+forcastResult.getCreatedBy()+" at "+forcastResult.getResultDate()); 
+        userAndDate.setText("This is the result of the prediction made by "+forcastResult.getCreatedBy()+" at "+forcastResult.getResultDate());
+        predictionDetails.setText("The result is the forcast of "+showResultService.getDataName(forcastResult)+
+        " to the next "+showResultService.getPredictionHorizon(forcastResult)+" in resolution of "+showResultService.getInterval(forcastResult)
+        +" Based on the last "+showResultService.getDataSize(forcastResult)+" observations."); 
         algorithmAndMse.setText("The aglorithem that was used is " +forcastResult.getAlgorithemUsed()+" which his MSE is "+forcastResult.getMse());;
 
+        Interval indexInterval = showResultService.getInterval(forcastResult);
+        if(indexInterval == null)
+        {
+            Notification errorNotification = Notification.show(
+                    "ERROR: There is no interval", 
+                    5000, // משך הזמן שההודעה תוצג באלפיות שנייה (5 שניות)
+                    Notification.Position.MIDDLE // מיקום ההודעה במסך
+            );
+            errorNotification.addThemeVariants(NotificationVariant.LUMO_ERROR);
+        }
+        indexText.setText(indexInterval.getApiValue());
+        String valueTitle = showResultService.getTitle(forcastResult);
+        if(valueTitle==null)
+        {
+            Notification errorNotification = Notification.show(
+                    "ERROR: There is no title", 
+                    5000, // משך הזמן שההודעה תוצג באלפיות שנייה (5 שניות)
+                    Notification.Position.MIDDLE // מיקום ההודעה במסך
+            );
+            errorNotification.addThemeVariants(NotificationVariant.LUMO_ERROR);
+        }
+        valueText.setText(valueTitle);
         addResultsToTheTable();
-        addResultsToTheChart();
+        addResultsToTheChart(indexInterval,valueTitle);
     }
 
-    private void addResultsToTheChart() 
+    private void addResultsToTheChart(Interval indexInterval, String valueTitle) 
     {
-       for(DataPoints dp : forcastList)
-       {
-            DataSeriesItem item = new DataSeriesItem(dp.getIndex(), dp.getValue());
-            forcasts.add(item);
-       }
-       int predictionHorizon = showResultService.getPredictionHorizon(forcastResult);
-       double predictionIndex = forcastList.size()-predictionHorizon+0.5;
+        resultsChartsConf.getxAxis().setTitle(resultsChartsConf.getxAxis().getTitle().getText()+" ("+indexInterval.getApiValue()+") ");
+        resultsChartsConf.getyAxis().setTitle(resultsChartsConf.getyAxis().getTitle().getText()+" ("+valueTitle+") ");
+        for(DataPoints dp : forcastList)
+        {
+                DataSeriesItem item = new DataSeriesItem(dp.getIndex(), dp.getValue());
+                forcasts.add(item);
+        }
+        int predictionHorizon = showResultService.getPredictionHorizon(forcastResult);
+        double predictionIndex = forcastList.size()-predictionHorizon+0.5;
 
-       //יצירת הקו המסמן מאיפה מתחילה התחזית
-       PlotLine forcastLine = new PlotLine();
-       forcastLine.setValue(predictionIndex);
-       forcastLine.setColor(SolidColor.RED);
-       forcastLine.setWidth(2);
-       forcastLine.setDashStyle(DashStyle.DASH);
-       resultsChartsConf.getxAxis().addPlotLine(forcastLine);
+        //יצירת הקו המסמן מאיפה מתחילה התחזית
+        PlotLine forcastLine = new PlotLine();
+        forcastLine.setValue(predictionIndex);
+        forcastLine.setColor(SolidColor.RED);
+        forcastLine.setWidth(2);
+        forcastLine.setDashStyle(DashStyle.DASH);
+        resultsChartsConf.getxAxis().addPlotLine(forcastLine);
 
     }
 
