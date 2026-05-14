@@ -12,15 +12,15 @@ import com.vaadin.flow.router.Route;
 import orip.stocks_prediction_system.datamodels.User;
 import orip.stocks_prediction_system.services.UserService;
 
-@Route(value = "/",layout = AppNavBarLayout.class)
-public class UserView extends VerticalLayout
+@Route(value = "/login",layout = AppNavBarLayout.class)
+public class LoginView extends VerticalLayout
 {
     private UserService userService;
     private Button btnInsert;
     private TextField txfUN;
     private TextField txfPW;
 
-    public UserView(UserService userService)
+    public LoginView(UserService userService)
     {
         this.userService = userService;
         add(new H1("User View"));

@@ -3,15 +3,20 @@ package orip.stocks_prediction_system.ui;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.avatar.Avatar;
+import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.H4;
 import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.icon.Icon;
+import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment;
 import com.vaadin.flow.router.RouterLink;
+import com.vaadin.flow.theme.lumo.Lumo;
 
 public class AppNavBarLayout extends AppLayout
 {
@@ -24,7 +29,9 @@ public class AppNavBarLayout extends AppLayout
         navbarPanel.getStyle().setMargin("10px");
         
         navbarPanel.add(new H2("TrendWise"));
-        navbarPanel.add(new RouterLink("Login Page", UserView.class));
+        navbarPanel.add(new RouterLink("Home page", HomeView.class));
+        navbarPanel.add(" | ");
+        navbarPanel.add(new RouterLink("Login Page", LoginView.class));
         navbarPanel.add(" | ");
         navbarPanel.add(new RouterLink("Upload data", UploadDataView.class));
         navbarPanel.add(" | ");
@@ -38,6 +45,21 @@ public class AppNavBarLayout extends AppLayout
         String time = "Time: "+LocalDateTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss"));
         DateTimePanel.add(date+" | "+time);
 
+        // יצירת כפתור להחלפת מצב תצוגה (Theme)
+        Button themeToggleButton = new Button(new Icon(VaadinIcon.MOON));
+        themeToggleButton.addClickListener(click -> {
+            var themeList = UI.getCurrent().getElement().getThemeList();
+            if (themeList.contains(Lumo.DARK)) {
+                // חזרה למצב בהיר
+                themeList.remove(Lumo.DARK);
+                themeToggleButton.setIcon(new Icon(VaadinIcon.MOON));
+            } else {
+                // מעבר למצב כהה
+                themeList.add(Lumo.DARK);
+                themeToggleButton.setIcon(new Icon(VaadinIcon.SUN_O));
+            }
+        });
+
         Avatar userAvatar = new Avatar("Ori Parhi","https://images.icon-icons.com/1879/PNG/512/iconfinder-7-avatar-2754582_120519.png");
         userAvatar.getStyle().setMargin("0px");
         userAvatar.getStyle().setMarginTop("10px");
@@ -50,7 +72,7 @@ public class AppNavBarLayout extends AppLayout
         // H4 info = new H4("Username:"+username+"  SessionID: "+SessionId);
 
 
-        navbarPanel.add(DateTimePanel,userAvatar);
+        navbarPanel.add(DateTimePanel,themeToggleButton,userAvatar);
         //addToNavbar(navbarPanel,info);
         addToNavbar(navbarPanel);
     }

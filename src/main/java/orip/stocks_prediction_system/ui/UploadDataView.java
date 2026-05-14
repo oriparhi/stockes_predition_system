@@ -221,12 +221,16 @@ public class UploadDataView extends VerticalLayout
             // fetchApiDataIfReady();
         });
         uploadApi.add(apiIntervalComboBox);
-        Button fetchApiData = new Button("Fetch Api Data");
-        fetchApiData.addClickListener(e -> {
+        Button fetchApiButton = new Button("Fetch Api Data");
+        fetchApiButton.getStyle().set("background-color", "#0859b1");
+        fetchApiButton.getStyle().set("color", "white");
+        fetchApiButton.getStyle().set("padding", "15px 30px");
+        fetchApiButton.getStyle().set("font-size", "1.2rem");
+        fetchApiButton.addClickListener(e -> {
             fetchApiDataIfReady();
             UtilsHelper.showNification("Operation succeded",3000,Position.MIDDLE, NotificationVariant.LUMO_SUCCESS );
         });
-        uploadApi.add(fetchApiData);
+        uploadApi.add(fetchApiButton);
         
 
         uploadData.add(uploadApi);
