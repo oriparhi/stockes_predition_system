@@ -13,6 +13,7 @@ import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.H4;
 import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.notification.Notification.Position;
@@ -24,8 +25,10 @@ import com.vaadin.flow.component.textfield.IntegerField.IntegerFieldI18n;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.upload.Upload;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.streams.InMemoryUploadHandler;
 import com.vaadin.flow.server.streams.UploadHandler;
+import com.vaadin.flow.theme.lumo.LumoIcon;
 
 import orip.stocks_prediction_system.datamodels.DataPoints;
 import orip.stocks_prediction_system.datamodels.ForcastResult;
@@ -76,12 +79,15 @@ public class UploadDataView extends VerticalLayout
         this.forcastingService = forcastingService;
         this.isItSeasonality = false;
 
-        this.username = "Guest";
-        // WelcomeMsg = "Hello "+username;
-        // title = new H1(WelcomeMsg);
+
+        this.username = (String) VaadinSession.getCurrent().getAttribute("loggedInUser");
+        if (username == null)
+            username = "Guest";
+        WelcomeMsg = "Hello "+username;
+        title = new H1(WelcomeMsg);
         time = LocalDateTime.now();
 
-        // add(title);
+        add(title);
         // add(new H2(time.toString()));
         add(new H3("Please enter here that data that you want to upload!"));
         add(new H3("You can do that by upload your CSV or by choosing a stock you want to forcast"));
@@ -104,6 +110,8 @@ public class UploadDataView extends VerticalLayout
         csvIntervalComboBox = new ComboBox<>("Choose the time interval");
         csvIntervalComboBox.setItems(Interval.values());
         csvIntervalComboBox.setRequiredIndicatorVisible(true);
+        csvIntervalComboBox.setValue(Interval.DAY_1);
+        this.interval = csvIntervalComboBox.getValue();
         //csvIntervalComboBox.setValue(Interval.DAY_1);
         // ברגע שמשנים את הערך, בודקים אם אפשר לאפשר את העלאת הקובץ
         csvIntervalComboBox.addValueChangeListener(e -> {
@@ -148,7 +156,7 @@ public class UploadDataView extends VerticalLayout
 
         upload = new Upload(inMemoryHandler);
         upload.setAcceptedFileTypes(".csv");
-        upload.setEnabled(false);
+        //upload.setEnabled(false);
         upload.addSucceededListener(event ->{ 
             uploadApi.setEnabled(false);
             uploadApi.getStyle().set("opacity", "0.5");
@@ -181,12 +189,12 @@ public class UploadDataView extends VerticalLayout
                 stocksComboBox.setValue(customValue); // זה יפעיל אוטומטית את ה-ValueChangeListener למטה
             }
             else{
-                UtilsHelper.showNification("Symbol must be 1-5 characters", 5000, Position.TOP_CENTER, NotificationVariant.LUMO_ERROR);
+                UtilsHelper.showNotification("Symbol must be 1-5 characters", 5000, Position.TOP_CENTER, NotificationVariant.LUMO_ERROR);
             }
         });
         stocksComboBox.addValueChangeListener(e -> {
             this.symbol = e.getValue().toString();
-            updateCsvStatus();
+            //updateCsvStatus();
             // fetchApiDataIfReady();
         });
         uploadApi.add(stocksComboBox);
@@ -201,7 +209,7 @@ public class UploadDataView extends VerticalLayout
         outputSizeEntryField.addValueChangeListener(e -> {
             // IntegerField.getValue() מחזיר Integer (עטיפה), יכול להיות null
             this.outputsize = (e.getValue() != null) ? e.getValue() : 0;
-            updateCsvStatus();
+            //updateCsvStatus();
             // fetchApiDataIfReady();
         });
         outputSizeEntryField.setI18n(new IntegerFieldI18n()
@@ -217,7 +225,7 @@ public class UploadDataView extends VerticalLayout
         this.interval = Interval.DAY_1;
         apiIntervalComboBox.addValueChangeListener(e -> {
             this.interval = e.getValue();
-            updateCsvStatus();
+            //updateCsvStatus();
             // fetchApiDataIfReady();
         });
         uploadApi.add(apiIntervalComboBox);
@@ -228,7 +236,7 @@ public class UploadDataView extends VerticalLayout
         fetchApiButton.getStyle().set("font-size", "1.2rem");
         fetchApiButton.addClickListener(e -> {
             fetchApiDataIfReady();
-            UtilsHelper.showNification("Operation succeded",3000,Position.MIDDLE, NotificationVariant.LUMO_SUCCESS );
+            UtilsHelper.showNotification("Operation succeded",3000,Position.MIDDLE, NotificationVariant.LUMO_SUCCESS );
         });
         uploadApi.add(fetchApiButton);
         
@@ -385,7 +393,7 @@ public class UploadDataView extends VerticalLayout
     
     boolean isCsvIntervalSelected = csvIntervalComboBox.getValue() != null;
     // Enable the option to upload CSV only when the API is empty and the user chose an interval for the CSV
-    upload.setEnabled(!anyApiFieldFilled && isCsvIntervalSelected);
+    //upload.setEnabled(!anyApiFieldFilled && isCsvIntervalSelected);
     uploadCsv.getElement().getStyle().set("opacity", anyApiFieldFilled ? "0.5" : "1.0");
     }
 
@@ -409,7 +417,7 @@ public class UploadDataView extends VerticalLayout
                 Notification.show("API data loaded and saved!", 3000, Position.TOP_CENTER)
                             .addThemeVariants(NotificationVariant.LUMO_SUCCESS);
                 
-                updateCsvStatus();
+                //updateCsvStatus();
             } catch (Exception e) 
             {
                 System.out.println(e);

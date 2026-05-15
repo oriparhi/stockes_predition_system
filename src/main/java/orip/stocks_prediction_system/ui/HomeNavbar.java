@@ -8,16 +8,15 @@ import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.avatar.Avatar;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
-import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.H4;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
-import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.notification.Notification.Position;
-import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.router.RouterLink;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.theme.lumo.Lumo;
@@ -26,11 +25,13 @@ import orip.stocks_prediction_system.services.UserService;
 import orip.stocks_prediction_system.utilities.RouteHelper;
 import orip.stocks_prediction_system.utilities.UtilsHelper;
 
-public class AppNavBarLayout extends AppLayout
+public class HomeNavbar extends AppLayout
 {
     private UserService userService;
-    public AppNavBarLayout(UserService userService)
+
+    public HomeNavbar(UserService userService) 
     {
+        this.userService = userService;
         this.userService = userService;
         // H1 title = new H1("Spring-Demo App");
 
@@ -38,10 +39,10 @@ public class AppNavBarLayout extends AppLayout
         navbarPanel.setWidthFull();
         navbarPanel.getStyle().setMargin("10px");
         
-        navbarPanel.add(new H2("TrendWise"));
-        navbarPanel.add(new RouterLink("Home page", HomeView.class));
-        navbarPanel.add(" | ");
+        navbarPanel.add(new H2("Welcome"));
         navbarPanel.add(new RouterLink("Login Page", LoginView.class));
+        navbarPanel.add(" | ");
+        navbarPanel.add(new RouterLink("Sign In", RegisterView.class));
         navbarPanel.add(" | ");
         navbarPanel.add(new RouterLink("Upload data", UploadDataView.class));
         navbarPanel.add(" | ");
@@ -100,4 +101,5 @@ public class AppNavBarLayout extends AppLayout
         //addToNavbar(navbarPanel,info);
         addToNavbar(navbarPanel);
     }
+        
 }

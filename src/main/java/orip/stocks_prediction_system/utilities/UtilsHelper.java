@@ -9,7 +9,7 @@ import com.vaadin.flow.theme.lumo.Lumo;
 
 public class UtilsHelper
 {
-   public static void showNification(String text, int duration, Position position, NotificationVariant... variants)
+   public static void showNotification(String text, int duration, Position position, NotificationVariant... variants)
    {
       Notification notification = new Notification(text, duration, position);
       notification.addThemeVariants(variants);

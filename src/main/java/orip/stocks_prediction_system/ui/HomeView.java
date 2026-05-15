@@ -9,7 +9,7 @@ import com.vaadin.flow.router.Route;
 import orip.stocks_prediction_system.services.HomeService;
 import orip.stocks_prediction_system.utilities.RouteHelper;
 
-@Route(value = "/",layout = AppNavBarLayout.class)
+@Route(value = "/",layout = HomeNavbar.class)
 public class HomeView extends VerticalLayout    
 {
     HomeService homeService;

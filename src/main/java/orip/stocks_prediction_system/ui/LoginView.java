@@ -2,49 +2,55 @@ package orip.stocks_prediction_system.ui;
 
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.H1;
-import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.login.LoginForm;
+import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.notification.Notification.Position;
-import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.Route;
 
-import orip.stocks_prediction_system.datamodels.User;
 import orip.stocks_prediction_system.services.UserService;
+import orip.stocks_prediction_system.utilities.RouteHelper;
+import orip.stocks_prediction_system.utilities.UtilsHelper;
 
 @Route(value = "/login",layout = AppNavBarLayout.class)
 public class LoginView extends VerticalLayout
 {
     private UserService userService;
-    private Button btnInsert;
-    private TextField txfUN;
-    private TextField txfPW;
 
     public LoginView(UserService userService)
     {
         this.userService = userService;
-        add(new H1("User View"));
-        HorizontalLayout layout = new HorizontalLayout(Alignment.BASELINE);
-        layout.add(txfUN = new TextField("Username"));
-        layout.add(txfPW = new TextField("password"));
-        layout.add(btnInsert = new Button("Insert User"));
-        btnInsert.addClickListener(clickEvent -> insertUserToDB(txfUN.getValue(), txfPW.getValue()));
-        add(layout);
+        setWidthFull();
+        setAlignItems(Alignment.CENTER);
+        add(new H1("Login View"));
+
+        LoginForm loginForm  = new LoginForm();
+        loginForm.addLoginListener(e -> {
+            String username = e.getUsername();
+            String password = e.getPassword();
+            if(userService.login(username, password))
+            {
+                RouteHelper.navigateTo(UploadDataView.class);
+            }
+            else
+            {
+                loginForm.setError(true);
+            }
+        });
+        loginForm.addForgotPasswordListener(e -> {
+            UtilsHelper.showNotification("So just remember it", 5000,Position.MIDDLE,NotificationVariant.LUMO_PRIMARY);
+        });
+
+        Button registerButton = new Button("Are you new here? ");
+        registerButton.getStyle().set("background-color", "#0859b1");
+        registerButton.getStyle().set("color", "white");
+        registerButton.getStyle().set("padding", "15px 30px");
+        registerButton.getStyle().set("font-size", "1.2rem");
+        registerButton.addClickListener(e -> {
+            RouteHelper.navigateTo(RegisterView.class);
+        });
+
+        add(loginForm,registerButton);
     }
 
-    private void insertUserToDB(String un, String pw)
-    {
-        // validation check
-        if(un==null || pw==null ||un.length()<6)
-            return;
-        try {
-            userService.insertNewUser(new User(un, pw));
-            Notification.show("User inserted OK", 3000, Position.MIDDLE);
-        } catch (Exception e) {
-            
-            e.printStackTrace();
-            // alert user by notification for this error
-            Notification.show("User NOT inserted "+e.getMessage(), 5000, Position.MIDDLE);
-        }
-    }
 }
