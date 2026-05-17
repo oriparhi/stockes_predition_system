@@ -37,6 +37,7 @@ import orip.stocks_prediction_system.services.CsvReaderService;
 import orip.stocks_prediction_system.services.ForcastingService;
 import orip.stocks_prediction_system.utilities.Interval;
 import orip.stocks_prediction_system.utilities.ReadCsvResponse;
+import orip.stocks_prediction_system.utilities.RouteHelper;
 import orip.stocks_prediction_system.utilities.TopStocks;
 import orip.stocks_prediction_system.utilities.UtilsHelper;
 
@@ -334,6 +335,13 @@ public class UploadDataView extends VerticalLayout
         predictButton.getStyle().set("font-size", "1.2rem");
         predictButton.addClickListener(clickEvent -> predictButtonClicked());
         add(predictButton);
+        Button predictButtonCopy = new Button("Predict2 (Only for developer)");
+        predictButtonCopy.getStyle().set("background-color", "#0fe404");
+        predictButtonCopy.getStyle().set("color", "white");
+        predictButtonCopy.getStyle().set("padding", "15px 30px");
+        predictButtonCopy.getStyle().set("font-size", "1.2rem");
+        predictButtonCopy.addClickListener(clickEvent -> predictButtonClickedCopy());
+        add(predictButtonCopy);
 
         //allow scrolling if needed
         this.setSizeFull();
@@ -424,6 +432,46 @@ public class UploadDataView extends VerticalLayout
                 Notification.show("Failed to fetch API data: " + e.getMessage(), 5000, Position.MIDDLE)
                         .addThemeVariants(NotificationVariant.LUMO_ERROR);
             }
+        }
+    }
+
+    public void predictButtonClickedCopy() 
+    {
+        // 1. וולידציה - מוודאים שכל הנתונים קיימים
+        if (newTimeSeriesId == null || newTimeSeriesId.isEmpty()) {
+            Notification.show("Please upload a CSV or fetch API data first.", 4000, Position.MIDDLE)
+                    .addThemeVariants(NotificationVariant.LUMO_ERROR);
+            return; // עוצר את הפונקציה
+        }
+        if (predictionHorizon <= 0) {
+            Notification.show("Please enter a valid prediction horizon.", 4000, Position.MIDDLE)
+                    .addThemeVariants(NotificationVariant.LUMO_ERROR);
+            return;
+        }
+        if (algorithem == null || algorithem.isEmpty()) {
+            Notification.show("Please select an algorithm.", 4000, Position.MIDDLE)
+                    .addThemeVariants(NotificationVariant.LUMO_ERROR);
+            return;
+        }
+        try
+        {
+            ForcastResult forcastResult = forcastingService.CreateNewForcast(newTimeSeriesId, predictionHorizon, algorithem, this.username, LocalDateTime.now());
+            if (forcastResult != null && forcastResult.getId() != null) 
+            {
+                Notification.show("Forecast generated successfully!", 2000, Position.TOP_END).addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+                getUI().ifPresent(ui -> ui.navigate(ShowResultCopy.class,forcastResult.getId()));
+
+            }
+            else
+            {
+                Notification.show("Failed to generate forecast. Please try again.", 4000, Position.MIDDLE).addThemeVariants(NotificationVariant.LUMO_ERROR);
+
+            }
+        }
+        catch (Exception e) 
+        {
+            e.printStackTrace();
+            Notification.show("An error occurred during forecasting: " + e.getMessage(), 5000, Position.MIDDLE).addThemeVariants(NotificationVariant.LUMO_ERROR);
         }
     }
 }

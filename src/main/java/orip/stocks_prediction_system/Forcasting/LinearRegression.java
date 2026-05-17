@@ -104,19 +104,22 @@ public class LinearRegression extends AbstractForcastModel
         combined.addAll(auditData);
         double M = calculateM(X_axis,combined);
         double B = calculateB(X_axis,combined, M);
+        int targetSize = combined.size()+futureSteps;
         
-        if(X_axis.size()<futureSteps)
+        while(X_axis.size()<targetSize)
         {
-            for(int i = X_axis.size();i<futureSteps;i++)
-                X_axis.add(new DataPoints(i,(double)i+1));
+            int i = X_axis.size();
+            X_axis.add(new DataPoints(i,(double)i+1));
         }
 
         for(int j = 0; j<X_axis.size();j++)
         {
+            double predictedValue = M * X_axis.get(j).getValue() + B;
+
             if(j==0)
-                forecastList.add(new DataPoints(0, M*X_axis.get(j).getValue()+B));
+                forecastList.add(new DataPoints(0,predictedValue));
             else
-                forecastList.add(new DataPoints(forecastList.getLast().getIndex()+1, M*X_axis.get(j).getValue()+B));
+                forecastList.add(new DataPoints(forecastList.getLast().getIndex()+1,predictedValue));
         }
         return forecastList;
     }

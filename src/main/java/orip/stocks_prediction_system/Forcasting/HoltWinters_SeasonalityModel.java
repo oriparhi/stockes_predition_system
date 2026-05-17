@@ -194,11 +194,11 @@ public class HoltWinters_SeasonalityModel extends AbstractForcastModel
             Seasonal[i] = data.get(i).getValue() / avgYear1;
         }
 
+        ArrayList <DataPoints> forecasts = new ArrayList<>();
 
         // Main Loop (starting from Year 2)
         for(int t = s; t<n; t++)
-        {
-            
+        {  
             if(t == s) //First prediction after the initialization
             {
                 Level[t] = data.get(t).getValue()/Seasonal[t - s];
@@ -207,6 +207,10 @@ public class HoltWinters_SeasonalityModel extends AbstractForcastModel
             }
             else
             {
+                // חילוץ התחזית ההיסטורית
+                double historicalPrediction = (Level[t-1] + Trend[t-1]) * Seasonal[t-1];
+                forecasts.add(new DataPoints(t, historicalPrediction));
+                
                 // Update Level
                 double valDeserialized = data.get(t).getValue() / Seasonal[t - s];
                 Level[t] = alpha * valDeserialized + (1 - alpha) * (Level[t - 1] + Trend[t - 1]);
@@ -218,7 +222,6 @@ public class HoltWinters_SeasonalityModel extends AbstractForcastModel
         }
 
         //project into the future
-        ArrayList <DataPoints> forecasts = new ArrayList<>();
         double lastLevel = Level[n-1];
         double lastTrend = Trend[n-1];
         

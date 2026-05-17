@@ -1,8 +1,11 @@
 package orip.stocks_prediction_system.services;
 
 
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 
+import orip.stocks_prediction_system.datamodels.DataPoints;
 import orip.stocks_prediction_system.datamodels.ForcastRequest;
 import orip.stocks_prediction_system.datamodels.ForcastResult;
 import orip.stocks_prediction_system.datamodels.TimeSeries;
@@ -117,5 +120,22 @@ public class ShowResultService
         }
         else return null;
     }
-    
+
+    public List<DataPoints> getPastData(ForcastResult forcastResult)
+    {
+        String forcastRequestId = forcastResult.getRequestId();
+        if(forcastRequestRepository.existsById(forcastRequestId))
+        {
+            ForcastRequest FRequest = forcastRequestRepository.findById(forcastRequestId).orElseThrow();
+            String timeSeriesId = FRequest.getTimeSeriesId();
+            if(timeSeriesRepo.existsById(timeSeriesId))
+            {
+                TimeSeries ts = timeSeriesRepo.findById(timeSeriesId).orElseThrow();
+                List<DataPoints> data = ts.getData();
+                return data;
+            }
+            else return null;
+        }
+        else return null;
+    }    
 }

@@ -60,17 +60,20 @@ public class ExponentialSmoothing extends AbstractForcastModel
         combined.addAll(auditData);
         double lastForecast = combined.get(0).getValue();
         double alpha = findBestAlpha(combined);
-        for(int i = 1; i<combined.size();i++)
+
+        forecastList.add(new DataPoints(0,lastForecast));//  הערך הראשון של נתוני העבר
+        // בניית התחזית על נתוני העבר
+        for(int i = 1; i < combined.size(); i++)
         {
-            lastForecast = alpha*combined.get(i).getValue() + (1-alpha)*lastForecast;
+            lastForecast = alpha * combined.get(i).getValue() + (1 - alpha) * lastForecast;
+            forecastList.add(new DataPoints(i, lastForecast));
         }
         
+        // The future forcast
         for(int j = 0; j<futureSteps;j++)
         {
-            if(j==0)
-                forecastList.add(new DataPoints(0,lastForecast));
-            else
-                forecastList.add(new DataPoints(forecastList.getLast().getIndex()+1,lastForecast));
+            int nextIndex = forecastList.getLast().getIndex()+1;
+            forecastList.add(new DataPoints(nextIndex,lastForecast));
         }
         return forecastList;
     }    

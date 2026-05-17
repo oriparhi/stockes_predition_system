@@ -94,28 +94,32 @@ public class MovingAverage extends AbstractForcastModel
     @Override
     public ArrayList<DataPoints> predict(int futureSteps) 
     {
+        forecastList.clear();
         ArrayList<DataPoints> combined = new ArrayList<>(buildingNumbers);
         combined.addAll(auditData);
-        for(int j = 0; j<futureSteps;j++)
+        
+        //forcast on past's data (since day K)
+        for(int i = K; i < combined.size(); i++) 
         {
-            double avg=0,forcast = 0,sum=0;
+            double sum = 0;
+            // סוכמים את K האיברים הקודמים
+            for(int j = 1; j <= K; j++) {
+                sum += combined.get(i - j).getValue();
+            }
+            forecastList.add(new DataPoints(i, sum / K));
+        }
+
+        for(int step = 0; step<futureSteps;step++)
+        {
+            double sum=0;
             for(int i = 0;i<K;i++)
             {
                 sum+=combined.get(combined.size()-1-i).getValue();
             }
-            avg = sum/K;
-            forcast = avg;
-            if(j==0)
-            {
-                combined.add(new DataPoints(0,forcast));
-                forecastList.add(new DataPoints(0,forcast));
-            }
-            else
-            {
-                combined.add(new DataPoints(combined.getLast().getIndex()+1,forcast));
-                forecastList.add(new DataPoints(forecastList.getLast().getIndex()+1,forcast));
-            }
-            
+            double nextForcast = sum/K; // the average
+
+            combined.add(new DataPoints(combined.getLast().getIndex()+1,nextForcast));
+            forecastList.add(new DataPoints(forecastList.getLast().getIndex()+1,nextForcast));
         }
         return forecastList;
     }

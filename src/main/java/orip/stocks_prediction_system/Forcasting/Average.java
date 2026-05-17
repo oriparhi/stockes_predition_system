@@ -52,7 +52,10 @@ public class Average extends AbstractForcastModel
     @Override
     public ArrayList<DataPoints> predict(int futureSteps) 
     {
-        for(int i = 0; i<futureSteps;i++)
+        forecastList.clear();
+        int totalSteps = buildingNumbers.size() + auditData.size() + futureSteps;// סך כל הנקודות: היסטוריה + עתיד
+
+        for(int i = 0; i<totalSteps;i++)
             forecastList.add(new DataPoints(i,average));
 
         return forecastList;
