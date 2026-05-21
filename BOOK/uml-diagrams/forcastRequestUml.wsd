@@ -1,0 +1,27 @@
+
+    class ForcastRequest {
+        <<Document>>
+        -String forcastId
+        -String timeSeriesId
+        -int predictionHorizon
+        -String Algorithm
+        -String requestedBy
+        -LocalDateTime requestedAt
+        -boolean isItSeasonality
+        +ForcastRequest()
+        +ForcastRequest(String, int, String, String, LocalDateTime, boolean)
+        +ForcastRequest(String, int, boolean, String, String, LocalDateTime)
+        +isItSeasonality() boolean
+        +setItSeasonality(boolean) void
+        +getRequestedBy() String
+        +setRequestedBy(String) void
+        +getRequestedAt() LocalDateTime
+        +setRequestedAt(LocalDateTime) void
+        +getPredictionHorizon() int
+        +setPredictionHorizon(int) void
+        +getAlgorithm() String
+        +setAlgorithm(String) void
+        +getForcastId() String
+        +getTimeSeriesId() String
+        +setTimeSeriesId(String) void
+    }

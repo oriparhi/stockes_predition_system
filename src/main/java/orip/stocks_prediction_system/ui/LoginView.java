@@ -40,6 +40,7 @@ public class LoginView extends VerticalLayout
         loginForm.addForgotPasswordListener(e -> {
             UtilsHelper.showNotification("So just remember it", 5000,Position.MIDDLE,NotificationVariant.LUMO_PRIMARY);
         });
+        loginForm.setForgotPasswordButtonVisible(false);
 
         Button registerButton = new Button("Are you new here? ");
         registerButton.getStyle().set("background-color", "#0859b1");

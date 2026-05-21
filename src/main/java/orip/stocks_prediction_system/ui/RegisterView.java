@@ -33,7 +33,7 @@ public class RegisterView extends VerticalLayout
 
         setWidthFull();
         setAlignItems(Alignment.CENTER);
-        add(new H1("This page was not created yet"));
+        add(new H1("Register"));
 
         entryUser = new TextField("Create username: ");
         entryUser.setClearButtonVisible(true);

@@ -1,0 +1,107 @@
+@startuml new_prediction_process_sequence
+autonumber
+
+actor User
+participant "Screen (UI)" as Screen
+participant "System" as Sys
+participant "External API" as API
+participant "Repository" as Repo
+database "Database" as DB
+participant "Prediction Display" as Display
+
+alt Upload CSV File
+    User -> Screen: Select Time Interval & CSV File
+    activate Screen
+    
+    Screen -> Sys: processCSV(csvFile)
+    activate Sys
+    Sys -> Sys: convertToLinkedList(DataPoint)
+    Sys --> Screen: convertedData
+    deactivate Sys
+    
+    Screen -> Sys: saveTimeSeriesData(username, creationDate, convertedData,\nfolderName, unitName, timeInterval)
+    activate Sys
+    Sys -> Repo: saveNewData(...)
+    activate Repo
+    Repo -> DB: insertData()
+    activate DB
+    DB --> Repo: newTimeSeriesId
+    deactivate DB
+    Repo --> Sys: newTimeSeriesId
+    deactivate Repo
+    Sys --> Screen: newTimeSeriesId
+    deactivate Sys
+
+else Fetch from API
+    User -> Screen: Enter Stock Symbol, Data Limit, Time Interval
+    
+    Screen -> Sys: fetchAPIData(stockSymbol, dataLimit, timeInterval)
+    activate Sys
+    Sys -> API: requestStockData(stockSymbol, dataLimit, timeInterval)
+    activate API
+    API --> Sys: JSON Response
+    deactivate API
+    
+    Sys -> Sys: convertJsonToLinkedList(DataPoint)
+    Sys --> Screen: convertedData
+    deactivate Sys
+    
+    Screen -> Sys: saveTimeSeriesData(username, creationDate, convertedData,\nAPI_Name, unitName, timeInterval)
+    activate Sys
+    Sys -> Repo: saveNewData(...)
+    activate Repo
+    Repo -> DB: insertData()
+    activate DB
+    DB --> Repo: newTimeSeriesId
+    deactivate DB
+    Repo --> Sys: newTimeSeriesId
+    deactivate Repo
+    Sys --> Screen: newTimeSeriesId
+    deactivate Sys
+end
+
+opt Data has Seasonality
+    User -> Screen: Select Seasonality = True & Enter Season Length
+    Screen -> Sys: updateSeasonality(newTimeSeriesId, seasonLength)
+    activate Sys
+    Sys -> Repo: updateSeasonalityRecord(newTimeSeriesId, seasonLength)
+    activate Repo
+    Repo -> DB: updateRecord(newTimeSeriesId)
+    activate DB
+    DB --> Repo: updateSuccess
+    deactivate DB
+    Repo --> Sys: updateSuccess
+    deactivate Repo
+    Sys --> Screen: updateSuccess
+    deactivate Sys
+end
+
+User -> Screen: Select Algorithm & Prediction Horizon
+Screen -> Sys: requestPrediction(newTimeSeriesId, predictionHorizon,\nalgorithm, this.username, LocalDateTime.now())
+activate Sys
+
+Sys -> Repo: savePredictionRequest(...)
+activate Repo
+Repo -> DB: insertPredictionRequest()
+activate DB
+DB --> Repo: success
+deactivate DB
+Repo --> Sys: success
+deactivate Repo
+
+Sys -> Sys: executePredictionAlgorithm(algorithm, predictionHorizon)
+
+Sys -> Repo: savePredictionResults(results)
+activate Repo
+Repo -> DB: insertResults()
+activate DB
+DB --> Repo: success
+deactivate DB
+Repo --> Sys: success
+deactivate Repo
+
+Sys --> Display: showPredictionResults(results)
+deactivate Sys
+deactivate Screen
+
+@enduml

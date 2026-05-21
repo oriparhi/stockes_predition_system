@@ -1,4 +1,4 @@
-package orip.stocks_prediction_system.forcasting;
+package orip.stocks_prediction_system.services.forcasting;
 
 import java.util.ArrayList;
 import java.util.List;

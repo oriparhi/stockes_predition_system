@@ -3,6 +3,8 @@ package orip.stocks_prediction_system.ui;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
+import com.vaadin.flow.component.AttachEvent;
+import com.vaadin.flow.component.DetachEvent;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.avatar.Avatar;
@@ -18,6 +20,7 @@ import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.notification.Notification.Position;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment;
+import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.router.RouterLink;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.theme.lumo.Lumo;
@@ -29,9 +32,16 @@ import orip.stocks_prediction_system.utilities.UtilsHelper;
 public class AppNavBarLayout extends AppLayout
 {
     private UserService userService;
+    private String username;
+
+    private Span timeSpan;
+    private Thread clockThread;
+    private volatile boolean isRunning = false;// כותב ישירות לRAM כדי שלא תהיה חוסר תאימות בין הליבות
+
     public AppNavBarLayout(UserService userService)
     {
         this.userService = userService;
+        username = (String) VaadinSession.getCurrent().getAttribute("loggedInUser");
         // H1 title = new H1("Spring-Demo App");
 
         HorizontalLayout navbarPanel = new HorizontalLayout(Alignment.BASELINE);
@@ -61,14 +71,17 @@ public class AppNavBarLayout extends AppLayout
             else
                 UtilsHelper.showNotification("You are not loged in yet", 2000,Position.TOP_CENTER,NotificationVariant.LUMO_WARNING);
         });
+        if(username==null)
+            logout.setVisible(false);
         navbarPanel.add(logout);
         
         HorizontalLayout DateTimePanel = new HorizontalLayout(Alignment.BASELINE);
         Span date = new Span("Date: "+LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE)+" |");
         date.getStyle().set("font-weight", "bold");
-        Span time = new Span("Time: "+LocalDateTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss")));
-        time.getStyle().set("font-weight", "bold");
-        DateTimePanel.add(date,time);
+        
+        timeSpan = new Span("Time: "+LocalDateTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss")));
+        timeSpan.getStyle().set("font-weight", "bold");
+        DateTimePanel.add(date,timeSpan);
 
         // יצירת כפתור להחלפת מצב תצוגה (Theme)
         Button themeToggleButton = new Button(new Icon(VaadinIcon.MOON));
@@ -89,8 +102,7 @@ public class AppNavBarLayout extends AppLayout
         userAvatar.getStyle().setMargin("0px");
         userAvatar.getStyle().setMarginTop("10px");
 
-        String username;
-        username = (String) VaadinSession.getCurrent().getAttribute("loggedInUser");
+        
         if (username == null)
             username = "Guest";
         H4 info = new H4("Username: "+username);
@@ -100,4 +112,42 @@ public class AppNavBarLayout extends AppLayout
         //addToNavbar(navbarPanel,info);
         addToNavbar(navbarPanel);
     }
+    @Override
+    // פונקציה המופעלת אוטומטית רק כאשר הרכיב מתחבר לדפדפן של המשתמש
+    protected void onAttach(AttachEvent attachEvent) {
+        UI ui = attachEvent.getUI();
+        isRunning = true;
+        clockThread = new Thread(()-> {
+            while (isRunning) 
+            {
+                try {
+                    Thread.sleep(1000);
+
+                    ui.access(()->{
+                        String currentTime = LocalDateTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss"));
+                        timeSpan.setText("Time: "+ currentTime);
+                    });
+                } catch (Exception e) 
+                {
+                    e.printStackTrace();
+                    Thread.currentThread().interrupt();
+                    break;
+                }
+
+
+            }
+        });
+        clockThread.setDaemon(true);//מגדיר את זה כתוכנית רקע ובעצם הורג את זה כאשר השרת נכבה
+        clockThread.start();
+    }
+    //פונקציה המופעלת אוטומטית ברגע שהרכיב מוסר מן המסך ומטרתה היא לנקות את הרכיב והתהליכים שלו מהזיכרון
+    @Override
+    protected void onDetach(DetachEvent detachEvent) 
+    {
+        isRunning = false;
+        if(clockThread != null)
+            clockThread.interrupt();
+    }
+
+
 }

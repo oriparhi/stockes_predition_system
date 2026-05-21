@@ -70,7 +70,7 @@ public class ShowResultView extends VerticalLayout implements HasUrlParameter<St
         this.setPadding(true);
         this.setSpacing(true);
 
-        add(new H1("Forcast Results Copy"));
+        add(new H1("Forcast Results"));
         add(userAndDate,predictionDetails,algorithmAndMse);
         
 
@@ -225,7 +225,7 @@ public class ShowResultView extends VerticalLayout implements HasUrlParameter<St
         System.out.println("Size of Historical Data: " + historicalData.size());
         System.out.println("Size of Forecast List: " + forcastList.size());
         PlotOptionsScatter scatterOptions = new PlotOptionsScatter();
-        scatterOptions.setColor(SolidColor.BLUE);
+        scatterOptions.setColor(SolidColor.BLACK);
         actualSeries.setPlotOptions(scatterOptions);
         if(historicalData != null)
         {
@@ -239,7 +239,7 @@ public class ShowResultView extends VerticalLayout implements HasUrlParameter<St
         // DataSeries forecastSeries = new DataSeries("Forecast Line");
         PlotOptionsLine lineOptions = new PlotOptionsLine();
         //lineOptions.setDashStyle(DashStyle.DOT); // הופך את הקו למקווקו (כמו באקסל)
-        lineOptions.setColor(SolidColor.BLACK);
+        lineOptions.setColor(SolidColor.BLUE);
 
         Marker lineMarker = new Marker();
         lineMarker.setEnabled(false);

@@ -1,0 +1,31 @@
+@startuml login_sequence
+autonumber
+
+actor User
+participant "System" as Sys
+participant "Repository" as Repo
+database "Database" as DB
+
+User -> Sys: Login(username, password)
+activate Sys
+
+Sys -> Repo: verifyCredentials(username, password)
+activate Repo
+
+Repo -> DB: queryUserCredentials(username, password)
+activate DB
+DB --> Repo: result (match or mismatch)
+deactivate DB
+
+Repo --> Sys: authenticationStatus
+deactivate Repo
+
+alt Credentials Match
+    Sys --> User: Login Successful (User Connected)
+else Credentials Mismatch
+    Sys --> User: Login Failed: Invalid Username or Password
+end
+
+deactivate Sys
+
+@enduml

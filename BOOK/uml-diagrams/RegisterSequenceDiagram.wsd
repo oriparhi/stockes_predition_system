@@ -1,0 +1,48 @@
+@startuml registration_sequence
+autonumber
+
+actor User
+participant "System" as Sys
+participant "Repository" as Repo
+database "Database" as DB
+
+User -> Sys: Register(username, password, email)
+activate Sys
+
+Sys -> Repo: checkUsernameExists(username)
+activate Repo
+
+Repo -> DB: queryUser(username)
+activate DB
+DB --> Repo: result (exists or not)
+deactivate DB
+
+Repo --> Sys: usernameStatus
+deactivate Repo
+
+alt Username Exists
+    Sys --> User: Registration Failed: Username Taken
+else Username Available
+    Sys -> Repo: saveUser(username, password, email)
+    activate Repo
+    Repo -> DB: insertUserRecord()
+    activate DB
+    DB --> Repo: success
+    deactivate DB
+    Repo --> Sys: userSaved
+    deactivate Repo
+    
+    Sys --> User: Registration Successful.\nPlease login to verify.
+    
+    User -> Sys: Login(username, password)
+    
+    alt Credentials Match
+        Sys --> User: Login Successful (User Connected)
+    else Credentials Mismatch
+        Sys --> User: Login Failed: Incorrect Credentials
+    end
+end
+
+deactivate Sys
+
+@enduml

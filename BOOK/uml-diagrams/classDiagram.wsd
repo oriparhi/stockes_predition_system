@@ -1,0 +1,168 @@
+@startuml
+skinparam packageStyle rectangle
+skinparam monochrome true
+skinparam shadowing false
+hide empty members
+
+top to bottom direction
+
+
+package "UI Layer (Views & Layouts)" as UILayer {
+
+    class "VerticalLayout" as VerticalLayout <<Vaadin>>
+    class "AppLayout" as AppLayout <<Vaadin>>
+
+    class AppLayoutAdmin
+    class AppLayoutStudent
+
+    AppLayout <|-- AppLayoutAdmin
+    AppLayout <|-- AppLayoutStudent
+
+
+    class LoginView
+    class LoginLecturerView
+    class RegisterStudentView
+
+    class HomeAdminView
+    class HomeLecturerView
+    class HomeStudentView
+
+    class AdminDataView
+    class AdminAddDataView
+    class ChooseCourseForStudentView
+    class MongoView
+
+    VerticalLayout <|-- LoginView
+    VerticalLayout <|-- LoginLecturerView
+    VerticalLayout <|-- RegisterStudentView
+
+    VerticalLayout <|-- HomeAdminView
+    VerticalLayout <|-- HomeLecturerView
+    VerticalLayout <|-- HomeStudentView
+
+    VerticalLayout <|-- AdminDataView
+    VerticalLayout <|-- AdminAddDataView
+    VerticalLayout <|-- ChooseCourseForStudentView
+    VerticalLayout <|-- MongoView
+
+
+
+    LoginView -[hidden]right-> HomeAdminView
+    LoginLecturerView -[hidden]right-> HomeLecturerView
+    RegisterStudentView -[hidden]right-> HomeStudentView
+    AdminDataView -[hidden]right-> ChooseCourseForStudentView
+    AdminAddDataView -[hidden]right-> MongoView
+
+    LoginView -[hidden]down-> LoginLecturerView
+    LoginLecturerView -[hidden]down-> RegisterStudentView
+    RegisterStudentView -[hidden]down-> AdminDataView
+    AdminDataView -[hidden]down-> AdminAddDataView
+
+    AppLayoutAdmin -[hidden]down-> LoginView
+}
+
+package "Service Layer (Business Logic)" as ServiceLayer {
+
+    class CoreService <<Core>>
+    class MongoService <<Database>>
+
+    class UserService
+    class LecturerService
+    class CourseService
+    class ScheduleService
+    class AdminService
+
+    class HomeAdminService
+    class HomeLecturerService
+    class HomeStudentService
+
+    class WeatherService <<External API>>
+}
+
+
+package "Repository Layer (Data Access)" as RepoLayer {
+
+    interface UserRepository <<MongoRepository>>
+    interface LecturerRepository <<MongoRepository>>
+    interface CourseRepository <<MongoRepository>>
+    interface ScheduleRepository <<MongoRepository>>
+    interface AdminRepository <<MongoRepository>>
+}
+
+
+package "Data Models (Entities)" as ModelLayer {
+
+    class User {
+        + String id
+        + String username
+    }
+
+    class Lecturer
+
+    class Admin
+
+    class Course 
+
+    class ScheduleDocument
+
+    class TimeSlot
+
+    class CourseGraph
+}
+
+
+package "Utilities & Algorithms" as UtilLayer {
+
+    class SchedulerHelper <<Algorithm>>
+    class TopologicalHelper <<Algorithm>>
+}
+
+
+UILayer -[hidden]down-> ServiceLayer
+ServiceLayer -[hidden]down-> RepoLayer
+RepoLayer -[hidden]down-> ModelLayer
+ModelLayer -[hidden]down-> UtilLayer
+
+LoginView ..down.> UserService
+LoginLecturerView ..down.> LecturerService
+RegisterStudentView ..down.> UserService
+
+HomeAdminView ..down.> HomeAdminService
+HomeLecturerView ..down.> HomeLecturerService
+HomeStudentView ..down.> HomeStudentService
+
+AdminDataView ..down.> AdminService
+AdminAddDataView ..down.> AdminService
+ChooseCourseForStudentView ..down.> CourseService
+MongoView ..down.> MongoService
+
+
+AdminService ..down.> AdminRepository
+UserService ..down.> UserRepository
+LecturerService ..down.> LecturerRepository
+CourseService ..down.> CourseRepository
+ScheduleService ..down.> ScheduleRepository
+
+HomeAdminService ..down.> ScheduleService
+HomeLecturerService ..down.> ScheduleService
+HomeStudentService ..down.> CourseService
+
+ScheduleService ..down.> SchedulerHelper
+CourseService ..down.> TopologicalHelper
+
+CoreService ..down.> UserService
+CoreService ..down.> CourseService
+
+WeatherService ..down.> ScheduleService
+
+
+UserRepository ..down.> User
+LecturerRepository ..down.> Lecturer
+AdminRepository ..down.> Admin
+CourseRepository ..down.> Course
+ScheduleRepository ..down.> ScheduleDocument
+
+ScheduleDocument ..down.> TimeSlot
+CourseGraph ..down.> Course
+
+@enduml

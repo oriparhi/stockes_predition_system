@@ -1,0 +1,23 @@
+@startuml home_page
+left to right direction
+
+actor "Guest" as guest
+actor "User" as registered
+
+rectangle "Home Page" {
+  usecase "register" as register
+  usecase "login" as login
+  usecase "create new prediction (guest)" as guest_prediction
+  
+  usecase "create new prediction" as registered_prediction
+  ' usecase "logout" as logout
+}
+
+guest --> register
+guest --> login
+guest --> guest_prediction
+
+registered --> registered_prediction
+' registered --> logout
+
+@enduml

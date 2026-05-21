@@ -1,0 +1,113 @@
+@startuml class_diagram
+skinparam packageStyle rectangle
+hide empty members
+
+' --- External Classes ---
+class "Vaadin::VerticalLayout" as VerticalLayout
+
+' --- Packages and Classes ---
+package datamodels {
+    class DataPoints
+    class ForcastRequest
+    class ForcastResult
+    class TimeSeries
+    class User
+}
+
+package repositories {
+    interface ForcastRequestRepository
+    interface ForcastResultRepository
+    interface TimeSeriesRepo
+    interface UserRepo
+}
+
+package services {
+    class ApiReaderService
+    class CsvReaderService
+    class ForcastingService
+    class HomeService
+    class ShowResultService
+    class UserService
+
+    package forcasting {
+        interface ForcastModel
+        abstract class AbstractForcastModel
+        class Average
+        class ExponentialSmoothing
+        class HoltWinters_SeasonalityModel
+        class LinearRegression
+        class MovingAverage
+    }
+}
+
+package ui {
+    class AppNavBarLayout
+    class HomeNavbar
+    class HomeView
+    class LoginView
+    class RegisterView
+    class ShowResultView
+    class UploadDataView
+}
+
+package utilities {
+    class Interval
+    class ReadCsvResponse
+    class RouteHelper
+    class TopStocks
+    class UtilsHelper
+}
+
+' --- Relationships ---
+
+' Datapoints contained in TimeSeries (Composition)
+TimeSeries *-- DataPoints
+
+' UI Classes inherit from VerticalLayout
+VerticalLayout <|-- AppNavBarLayout
+VerticalLayout <|-- HomeNavbar
+VerticalLayout <|-- HomeView
+VerticalLayout <|-- LoginView
+VerticalLayout <|-- RegisterView
+VerticalLayout <|-- ShowResultView
+VerticalLayout <|-- UploadDataView
+
+' Repositories contained in Services
+CsvReaderService *-- TimeSeriesRepo
+ApiReaderService *-- TimeSeriesRepo
+ShowResultService *-- TimeSeriesRepo
+ForcastingService *-- TimeSeriesRepo
+
+ForcastingService *-- ForcastRequestRepository
+ShowResultService *-- ForcastRequestRepository
+
+ForcastingService *-- ForcastResultRepository
+ShowResultService *-- ForcastResultRepository
+
+' Services contained in UI Views
+UploadDataView *-- CsvReaderService
+UploadDataView *-- ApiReaderService
+UploadDataView *-- ForcastingService
+
+LoginView *-- UserService
+RegisterView *-- UserService
+
+ShowResultView *-- ShowResultService
+
+' Forcasting Algorithm Inheritance & Implementation
+ForcastModel <|.. AbstractForcastModel
+
+AbstractForcastModel <|-- Average
+AbstractForcastModel <|-- ExponentialSmoothing
+AbstractForcastModel <|-- HoltWinters_SeasonalityModel
+AbstractForcastModel <|-- LinearRegression
+AbstractForcastModel <|-- MovingAverage
+
+' ForcastingService uses the specific algorithms
+ForcastingService --> Average
+ForcastingService --> ExponentialSmoothing
+ForcastingService --> HoltWinters_SeasonalityModel
+ForcastingService --> LinearRegression
+ForcastingService --> MovingAverage
+
+@enduml

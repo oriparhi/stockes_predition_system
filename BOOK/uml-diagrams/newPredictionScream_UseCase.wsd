@@ -1,0 +1,37 @@
+@startuml new_prediction_screen
+left to right direction
+
+actor User
+
+rectangle "New Prediction Screen" {
+  usecase "Upload CSV Data" as UC_CSV
+  usecase "Fetch API Data" as UC_API
+  
+  usecase "Enter Time Interval" as UC_Interval
+  usecase "Enter Stock Symbol" as UC_Symbol
+  usecase "Enter Data Limit" as UC_DataLimit
+  
+  usecase "Configure Seasonality" as UC_Seasonality
+  usecase "Enter Season Length" as UC_SeasonLength
+  
+  usecase "Select Prediction Algorithm" as UC_Algo
+  usecase "Enter Prediction Limit" as UC_PredLimit
+  usecase "Generate Prediction" as UC_Generate
+}
+
+User --> UC_CSV
+User --> UC_API
+User --> UC_Seasonality
+User --> UC_Algo
+User --> UC_PredLimit
+User --> UC_Generate
+
+UC_CSV .> UC_Interval : <<include>>
+
+UC_API .> UC_Interval : <<include>>
+UC_API .> UC_Symbol : <<include>>
+UC_API .> UC_DataLimit : <<include>>
+
+UC_SeasonLength .> UC_Seasonality : <<extend>>
+
+@enduml

@@ -1,0 +1,13 @@
+
+    class DataPoints {
+        -int index
+        -double value
+        +DataPoints()
+        +DataPoints(double)
+        +DataPoints(int, double)
+        +getIndex() int
+        +setIndex(int) void
+        +getValue() double
+        +setValue(double) void
+        +toString() String
+    }

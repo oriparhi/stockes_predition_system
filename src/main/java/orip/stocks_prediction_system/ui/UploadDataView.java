@@ -64,7 +64,8 @@ public class UploadDataView extends VerticalLayout
     private String newTimeSeriesId;
     private String symbol;
     private int outputsize;
-    private Interval interval;
+    private Interval csvInterval;
+    private Interval apiInterval;
     List<DataPoints> apiData;
     private boolean isItSeasonality;
     private int seasonalityPeriod;
@@ -112,11 +113,11 @@ public class UploadDataView extends VerticalLayout
         csvIntervalComboBox.setItems(Interval.values());
         csvIntervalComboBox.setRequiredIndicatorVisible(true);
         csvIntervalComboBox.setValue(Interval.DAY_1);
-        this.interval = csvIntervalComboBox.getValue();
+        this.csvInterval = csvIntervalComboBox.getValue();
         //csvIntervalComboBox.setValue(Interval.DAY_1);
         // ברגע שמשנים את הערך, בודקים אם אפשר לאפשר את העלאת הקובץ
         csvIntervalComboBox.addValueChangeListener(e -> {
-            this.interval = e.getValue();
+            this.csvInterval = e.getValue();
             updateCsvStatus(); 
         });
 
@@ -137,7 +138,7 @@ public class UploadDataView extends VerticalLayout
                         parsedData,
                         fileName,
                         csvTitle,
-                        this.interval
+                        this.csvInterval
                     );
                     notify.setText("Csv was uploaded successfully");
                     notify.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
@@ -220,12 +221,12 @@ public class UploadDataView extends VerticalLayout
             .setMaxErrorMessage("The output size must be 5000 maximum"));
         uploadApi.add(outputSizeEntryField);
 
-        apiIntervalComboBox = new ComboBox<>("Choose the time interval",e -> interval = e.getValue());
+        apiIntervalComboBox = new ComboBox<>("Choose the time interval",e -> apiInterval = e.getValue());
         apiIntervalComboBox.setItems(Interval.values());
         apiIntervalComboBox.setValue(Interval.DAY_1);
-        this.interval = Interval.DAY_1;
+        this.apiInterval = Interval.DAY_1;
         apiIntervalComboBox.addValueChangeListener(e -> {
-            this.interval = e.getValue();
+            this.apiInterval = e.getValue();
             //updateCsvStatus();
             // fetchApiDataIfReady();
         });
@@ -236,8 +237,11 @@ public class UploadDataView extends VerticalLayout
         fetchApiButton.getStyle().set("padding", "15px 30px");
         fetchApiButton.getStyle().set("font-size", "1.2rem");
         fetchApiButton.addClickListener(e -> {
-            fetchApiDataIfReady();
-            UtilsHelper.showNotification("Operation succeded",3000,Position.MIDDLE, NotificationVariant.LUMO_SUCCESS );
+            if(fetchApiDataIfReady())
+                System.out.println("Operation succeded");
+                //UtilsHelper.showNotification("Operation succeded",3000,Position.MIDDLE, NotificationVariant.LUMO_SUCCESS );
+            else
+                UtilsHelper.showNotification("Operation faild", 3000,Position.MIDDLE, NotificationVariant.LUMO_ERROR);
         });
         uploadApi.add(fetchApiButton);
         
@@ -335,13 +339,14 @@ public class UploadDataView extends VerticalLayout
         predictButton.getStyle().set("font-size", "1.2rem");
         predictButton.addClickListener(clickEvent -> predictButtonClicked());
         add(predictButton);
-        Button predictButtonCopy = new Button("Predict2 (Only for developer)");
-        predictButtonCopy.getStyle().set("background-color", "#0fe404");
-        predictButtonCopy.getStyle().set("color", "white");
-        predictButtonCopy.getStyle().set("padding", "15px 30px");
-        predictButtonCopy.getStyle().set("font-size", "1.2rem");
-        predictButtonCopy.addClickListener(clickEvent -> predictButtonClickedCopy());
-        add(predictButtonCopy);
+
+        // Button predictButtonCopy = new Button("Predict2 (Only for developer)");
+        // predictButtonCopy.getStyle().set("background-color", "#0fe404");
+        // predictButtonCopy.getStyle().set("color", "white");
+        // predictButtonCopy.getStyle().set("padding", "15px 30px");
+        // predictButtonCopy.getStyle().set("font-size", "1.2rem");
+        // predictButtonCopy.addClickListener(clickEvent -> predictButtonClickedCopy());
+        // add(predictButtonCopy);
 
         //allow scrolling if needed
         this.setSizeFull();
@@ -402,16 +407,16 @@ public class UploadDataView extends VerticalLayout
     boolean isCsvIntervalSelected = csvIntervalComboBox.getValue() != null;
     // Enable the option to upload CSV only when the API is empty and the user chose an interval for the CSV
     //upload.setEnabled(!anyApiFieldFilled && isCsvIntervalSelected);
-    uploadCsv.getElement().getStyle().set("opacity", anyApiFieldFilled ? "0.5" : "1.0");
+    //uploadCsv.getElement().getStyle().set("opacity", anyApiFieldFilled ? "0.5" : "1.0");
     }
 
-    private void fetchApiDataIfReady()
+    private boolean fetchApiDataIfReady()
     {
-        if(symbol!=null && !symbol.trim().isEmpty() && interval != null && outputsize>0)
+        if(symbol!=null && !symbol.trim().isEmpty() && apiInterval != null && outputsize>0)
         {
             try 
             {
-                apiData = apiReaderService.getStockData(symbol,interval,outputsize);
+                apiData = apiReaderService.getStockData(symbol,apiInterval,outputsize);
                 if(apiData!=null&& !apiData.isEmpty())
                 {
                     newTimeSeriesId = apiReaderService.CreateNewTimeSeries(
@@ -419,11 +424,12 @@ public class UploadDataView extends VerticalLayout
                     LocalDateTime.now(),
                     apiData,
                     this.username,
-                    this.interval
+                    this.apiInterval
                     );
                 }
                 Notification.show("API data loaded and saved!", 3000, Position.TOP_CENTER)
                             .addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+                return true;
                 
                 //updateCsvStatus();
             } catch (Exception e) 
@@ -431,47 +437,49 @@ public class UploadDataView extends VerticalLayout
                 System.out.println(e);
                 Notification.show("Failed to fetch API data: " + e.getMessage(), 5000, Position.MIDDLE)
                         .addThemeVariants(NotificationVariant.LUMO_ERROR);
+                return false;
             }
         }
+        return false;
     }
 
-    public void predictButtonClickedCopy() 
-    {
-        // 1. וולידציה - מוודאים שכל הנתונים קיימים
-        if (newTimeSeriesId == null || newTimeSeriesId.isEmpty()) {
-            Notification.show("Please upload a CSV or fetch API data first.", 4000, Position.MIDDLE)
-                    .addThemeVariants(NotificationVariant.LUMO_ERROR);
-            return; // עוצר את הפונקציה
-        }
-        if (predictionHorizon <= 0) {
-            Notification.show("Please enter a valid prediction horizon.", 4000, Position.MIDDLE)
-                    .addThemeVariants(NotificationVariant.LUMO_ERROR);
-            return;
-        }
-        if (algorithem == null || algorithem.isEmpty()) {
-            Notification.show("Please select an algorithm.", 4000, Position.MIDDLE)
-                    .addThemeVariants(NotificationVariant.LUMO_ERROR);
-            return;
-        }
-        try
-        {
-            ForcastResult forcastResult = forcastingService.CreateNewForcast(newTimeSeriesId, predictionHorizon, algorithem, this.username, LocalDateTime.now());
-            if (forcastResult != null && forcastResult.getId() != null) 
-            {
-                Notification.show("Forecast generated successfully!", 2000, Position.TOP_END).addThemeVariants(NotificationVariant.LUMO_SUCCESS);
-                getUI().ifPresent(ui -> ui.navigate(ShowResultCopy.class,forcastResult.getId()));
+    // public void predictButtonClickedCopy() 
+    // {
+    //     // 1. וולידציה - מוודאים שכל הנתונים קיימים
+    //     if (newTimeSeriesId == null || newTimeSeriesId.isEmpty()) {
+    //         Notification.show("Please upload a CSV or fetch API data first.", 4000, Position.MIDDLE)
+    //                 .addThemeVariants(NotificationVariant.LUMO_ERROR);
+    //         return; // עוצר את הפונקציה
+    //     }
+    //     if (predictionHorizon <= 0) {
+    //         Notification.show("Please enter a valid prediction horizon.", 4000, Position.MIDDLE)
+    //                 .addThemeVariants(NotificationVariant.LUMO_ERROR);
+    //         return;
+    //     }
+    //     if (algorithem == null || algorithem.isEmpty()) {
+    //         Notification.show("Please select an algorithm.", 4000, Position.MIDDLE)
+    //                 .addThemeVariants(NotificationVariant.LUMO_ERROR);
+    //         return;
+    //     }
+    //     try
+    //     {
+    //         ForcastResult forcastResult = forcastingService.CreateNewForcast(newTimeSeriesId, predictionHorizon, algorithem, this.username, LocalDateTime.now());
+    //         if (forcastResult != null && forcastResult.getId() != null) 
+    //         {
+    //             Notification.show("Forecast generated successfully!", 2000, Position.TOP_END).addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+    //             getUI().ifPresent(ui -> ui.navigate(ShowResultCopy.class,forcastResult.getId()));
 
-            }
-            else
-            {
-                Notification.show("Failed to generate forecast. Please try again.", 4000, Position.MIDDLE).addThemeVariants(NotificationVariant.LUMO_ERROR);
+    //         }
+    //         else
+    //         {
+    //             Notification.show("Failed to generate forecast. Please try again.", 4000, Position.MIDDLE).addThemeVariants(NotificationVariant.LUMO_ERROR);
 
-            }
-        }
-        catch (Exception e) 
-        {
-            e.printStackTrace();
-            Notification.show("An error occurred during forecasting: " + e.getMessage(), 5000, Position.MIDDLE).addThemeVariants(NotificationVariant.LUMO_ERROR);
-        }
-    }
+    //         }
+    //     }
+    //     catch (Exception e) 
+    //     {
+    //         e.printStackTrace();
+    //         Notification.show("An error occurred during forecasting: " + e.getMessage(), 5000, Position.MIDDLE).addThemeVariants(NotificationVariant.LUMO_ERROR);
+    //     }
+    // }
 }
